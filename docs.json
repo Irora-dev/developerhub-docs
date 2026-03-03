@@ -8,6 +8,33 @@
     "dark": "#1e3a5f"
   },
   "favicon": "/favicon.svg",
+  "redirects": [
+    { "source": "/verifai-sec/:slug*", "destination": "/irora-sec/:slug*" }
+  ],
+  "api": {
+    "mdx": {
+      "auth": {
+        "method": "bearer"
+      }
+    }
+  },
+  "seo": {
+    "metatags": {
+      "og:site_name": "Irora Developer Hub",
+      "og:image": "https://docs.irora.ai/images/og-banner.png",
+      "twitter:card": "summary_large_image",
+      "twitter:site": "@irora_ai"
+    }
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "banner": {
+    "content": "Irora SEC is live — [get started with 1,000 free API calls](/irora-sec/quickstart)",
+    "dismissible": true
+  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -106,7 +133,8 @@
             "icon": "gear",
             "pages": [
               "irora-sec/guides/pricing",
-              "irora-sec/guides/api-suite"
+              "irora-sec/guides/api-suite",
+              "irora-sec/changelog"
             ]
           }
         ]

@@ -8,6 +8,21 @@ icon: circle-exclamation
 
 <Snippet file="shared/response-format.mdx" />
 
+## Full error code reference
+
+| Status | `error.code` | Common causes | Fix |
+| ------ | ------------ | ------------- | --- |
+| `400` | `invalid_request` | Missing required parameter, malformed JSON body, invalid date format | Check the `error.message` for which parameter is invalid. Refer to the endpoint's API reference for required fields. |
+| `401` | `unauthorized` | Missing `Authorization` header, expired API key, malformed bearer token | Ensure the header is `Authorization: Bearer <key>`. Regenerate your key at [irora.ai/keys](https://irora.ai/keys) if expired. |
+| `403` | `forbidden` | API key scoped to a different product, insufficient plan tier | Verify your key matches the product you're calling. Upgrade your plan if the endpoint requires a higher tier. |
+| `404` | `not_found` | Invalid filing ID, deleted watchlist, typo in endpoint path | Double-check the resource ID and endpoint URL. Use the search endpoint to find valid IDs. |
+| `409` | `conflict` | Duplicate watchlist name, alert already exists for this filing | Change the conflicting field value or delete the existing resource first. |
+| `422` | `unprocessable` | Valid JSON but semantically wrong (e.g., `limit: -1`, future date for historical endpoint) | Fix the field value per the `error.message` guidance. |
+| `429` | `rate_limited` | Exceeded per-minute or per-day request quota | Check `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers. Implement exponential backoff. See [rate limits](/platform/rate-limits). |
+| `500` | `internal_error` | Unexpected server failure | Retry after a few seconds. If persistent, contact support with the `meta.requestId`. |
+| `502` | `upstream_error` | SEC EDGAR or upstream data provider is unavailable | Cached data may still be returned (check `X-Data-Source: cache` header). Monitor [status.irora.ai](https://status.irora.ai). |
+| `503` | `service_unavailable` | Planned maintenance or deploy in progress | Retry in 30–60 seconds. Check [status.irora.ai](https://status.irora.ai) for maintenance windows. |
+
 ## Debugging errors
 
 ### Use the request ID

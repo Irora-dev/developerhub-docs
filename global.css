@@ -1,0 +1,16 @@
+/* Brand refinements for Irora docs */
+
+/* Accent-colored table headers */
+th {
+  border-bottom: 2px solid #3b82f6;
+}
+
+/* Softer code block border */
+pre {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+/* Blockquote accent */
+blockquote {
+  border-left: 3px solid #3b82f6;
+}
