@@ -5,3 +5,13 @@
 # Draft content
 drafts/
 *.draft.mdx
+
+# Templates (not actual docs pages)
+_templates/
+
+# Scripts (not docs pages)
+scripts/
+
+# Guides
+PRODUCT_DOCS_GUIDE.md
+AGENTS.md
