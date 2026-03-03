@@ -39,7 +39,7 @@ cd /path/to/developerhub-docs
 cp -r _templates/product-docs/ <product-slug>/
 ```
 
-Use a lowercase, hyphenated slug that matches the product's API path (e.g., `sanctionseeker`, `verifai-sec`).
+Use a lowercase, hyphenated slug that matches the product's API path (e.g., `irora-sec`).
 
 ## Step 2: Fill in the templates
 
@@ -47,11 +47,11 @@ Each template file contains `{{PLACEHOLDER}}` values. Replace them all:
 
 | Placeholder | Description | Example |
 |---|---|---|
-| `{{PRODUCT_NAME}}` | Display name | SanctionsSeeker |
-| `{{PRODUCT_SLUG}}` | URL-safe slug | sanctionseeker |
-| `{{PRODUCT_TAGLINE}}` | One-line description | Global sanctions screening API |
-| `{{PRODUCT_DESCRIPTION}}` | Full intro paragraph | SanctionsSeeker provides... |
-| `{{PRODUCT_DESCRIPTION_SHORT}}` | Short one-liner | sanctions screening data |
+| `{{PRODUCT_NAME}}` | Display name | Irora SEC |
+| `{{PRODUCT_SLUG}}` | URL-safe slug | irora-sec |
+| `{{PRODUCT_TAGLINE}}` | One-line description | AI-powered SEC filing intelligence |
+| `{{PRODUCT_DESCRIPTION}}` | Full intro paragraph | Irora SEC provides... |
+| `{{PRODUCT_DESCRIPTION_SHORT}}` | Short one-liner | SEC filing intelligence |
 | `{{EXAMPLE_ENDPOINT}}` | First endpoint to demo | search |
 | `{{GUIDE_TITLE}}` | First guide title | Search syntax |
 | `{{GUIDE_DESCRIPTION}}` | First guide description | How to write search queries |
@@ -140,7 +140,7 @@ Add the product to the footer links in `docs.json`:
 {
   "header": "Products",
   "items": [
-    { "label": "VerifAI SEC", "href": "/verifai-sec" },
+    { "label": "Irora SEC", "href": "/irora-sec" },
     { "label": "<Product Name>", "href": "/<product-slug>" }
   ]
 }
@@ -187,7 +187,7 @@ developerhub-docs/
   docs.json
   index.mdx                          # Hub landing page (updated)
   platform/                           # Cross-product docs
-  verifai-sec/                        # Existing product
+  irora-sec/                        # Existing product
   <product-slug>/                     # Your new product
     index.mdx                         # Product intro
     quickstart.mdx                    # Getting started

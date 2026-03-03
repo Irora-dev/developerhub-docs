@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Irora Developer Hub",
+  "name": "Suite by Irora",
   "colors": {
     "primary": "#3b82f6",
     "light": "#60a5fa",
@@ -11,6 +11,9 @@
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
+  },
+  "background": {
+    "decoration": "gradient"
   },
   "navbar": {
     "links": [
@@ -29,13 +32,26 @@
       "href": "https://irora.ai/keys"
     }
   },
+  "rounded": "default",
+  "font": {
+    "headings": {
+      "family": "Inter",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 400
+    }
+  },
   "navigation": {
     "tabs": [
       {
         "tab": "Platform",
+        "icon": "layer-group",
         "groups": [
           {
             "group": "Getting Started",
+            "icon": "rocket",
             "pages": [
               "index",
               "platform/authentication",
@@ -46,37 +62,68 @@
         ]
       },
       {
-        "tab": "VerifAI SEC",
+        "tab": "Irora SEC",
+        "icon": "file-contract",
         "groups": [
           {
             "group": "Overview",
+            "icon": "compass",
             "pages": [
-              "verifai-sec/index",
-              "verifai-sec/quickstart"
+              "irora-sec/index",
+              "irora-sec/quickstart"
             ]
           },
           {
-            "group": "Guides",
+            "group": "Core Guides",
+            "icon": "book",
             "pages": [
-              "verifai-sec/guides/form-types",
-              "verifai-sec/guides/risk-scoring",
-              "verifai-sec/guides/search",
-              "verifai-sec/guides/api-suite"
+              "irora-sec/guides/form-types",
+              "irora-sec/guides/search",
+              "irora-sec/guides/natural-language-search",
+              "irora-sec/guides/risk-scoring",
+              "irora-sec/guides/change-detection"
+            ]
+          },
+          {
+            "group": "Data Sources",
+            "icon": "database",
+            "pages": [
+              "irora-sec/guides/insider-trading",
+              "irora-sec/guides/politician-trades"
+            ]
+          },
+          {
+            "group": "Features",
+            "icon": "wand-magic-sparkles",
+            "pages": [
+              "irora-sec/guides/watchlists",
+              "irora-sec/guides/alerts",
+              "irora-sec/guides/webhooks"
+            ]
+          },
+          {
+            "group": "Platform",
+            "icon": "gear",
+            "pages": [
+              "irora-sec/guides/pricing",
+              "irora-sec/guides/api-suite"
             ]
           }
         ]
       },
       {
         "tab": "API Reference",
+        "icon": "terminal",
         "groups": [
           {
-            "group": "VerifAI SEC API",
+            "group": "Irora SEC API",
+            "icon": "code",
             "pages": [
-              "verifai-sec/api-reference/introduction"
+              "irora-sec/api-reference/introduction"
             ]
           }
         ],
-        "openapi": "verifai-sec/openapi.yaml"
+        "openapi": "irora-sec/openapi.yaml"
       }
     ]
   },
@@ -107,8 +154,8 @@
         "header": "Products",
         "items": [
           {
-            "label": "VerifAI SEC",
-            "href": "/verifai-sec"
+            "label": "Irora SEC",
+            "href": "/irora-sec"
           }
         ]
       },
@@ -117,7 +164,11 @@
         "items": [
           {
             "label": "API Reference",
-            "href": "/verifai-sec/api-reference/introduction"
+            "href": "/irora-sec/api-reference/introduction"
+          },
+          {
+            "label": "Quickstart",
+            "href": "/irora-sec/quickstart"
           },
           {
             "label": "Status",

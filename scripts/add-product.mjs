@@ -561,7 +561,7 @@ async function interactiveMode(dryRun) {
 
   // Product name
   while (true) {
-    config.productName = (await ask("Product name (e.g. SanctionsSeeker): ")).trim();
+    config.productName = (await ask("Product name (e.g. Irora SEC): ")).trim();
     const err = validate("productName", config.productName);
     if (!err) break;
     console.log(`  Invalid: ${err}`);

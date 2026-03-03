@@ -1,0 +1,134 @@
+---
+title: Risk scoring
+description: How Irora SEC's AI risk scoring system works
+icon: triangle-exclamation
+---
+
+Every filing processed by Irora SEC receives a **risk score** from 0 to 100. The score reflects the number and severity of anomalies detected by our AI models.
+
+## Score ranges
+
+| Range | Label | Meaning |
+|-------|-------|---------|
+| 0-20 | Low | Clean filing with no significant anomalies |
+| 21-40 | Moderate | Minor irregularities worth reviewing |
+| 41-60 | Elevated | Notable anomalies that warrant investigation |
+| 61-80 | High | Serious flags across multiple dimensions |
+| 81-100 | Critical | Major red flags — likely restatement, fraud, or material misrepresentation |
+
+## What triggers risk flags
+
+The AI evaluates filings across several dimensions:
+
+### Financial anomalies
+
+- Revenue recognition changes
+- Unusual related-party transactions
+- Material restatements or corrections
+- Significant changes in accounting estimates
+- Going concern qualifications
+
+### Disclosure gaps
+
+- Missing or incomplete risk factor disclosures
+- Unusual changes to critical accounting policies
+- Late or amended filings
+- Significant redactions or omissions
+
+### Pattern analysis
+
+- Deviations from the company's historical filing patterns
+- Industry peer comparison outliers
+- Timing anomalies (e.g., filing delays near earnings)
+- Changes in auditor or legal counsel
+
+### Textual signals
+
+- Sentiment shifts in MD&A (Management Discussion & Analysis)
+- Increased use of hedging language
+- Changes in forward-looking statement tone
+- Unusual legal disclaimer additions
+
+## Change severity classification
+
+In addition to the overall risk score, Irora SEC classifies individual changes between sequential filings using a 17-rule severity engine. This provides granular insight into *what* changed and *how significant* it is.
+
+### How it works
+
+When comparing two filings (e.g. this year's 10-K vs. last year's), each section-level change is evaluated against three inputs:
+
+1. **Section type** — Risk Factors, MD&A, Financial Statements, etc.
+2. **Change type** — added, modified, or removed
+3. **Change magnitude** — percentage of the section that changed
+
+### High-severity changes
+
+These changes are most likely to be material:
+
+| Section | Condition |
+|---------|-----------|
+| Risk Factors | New risk factor added or existing one removed |
+| Risk Factors | >30% of content modified |
+| Revenue Recognition | Any change |
+| MD&A | >25% of content modified |
+| Financial Statements | Any change |
+| Legal Proceedings | New proceeding disclosed |
+
+### Medium-severity changes
+
+Worth monitoring:
+
+| Section | Condition |
+|---------|-----------|
+| Risk Factors | 30% or less modified |
+| MD&A | 25% or less modified |
+| Legal Proceedings | Updated |
+| Forward-Looking Statements | Modified |
+| Executive Compensation | Modified |
+| Charter / Bylaws | Modified |
+| Any section | >50% new or modified content |
+
+See the [change detection guide](/irora-sec/guides/change-detection) for the complete 17-rule classifier and the filing comparison API.
+
+## Using risk scores in your application
+
+### Filter filings by risk level
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=tesla"
+```
+
+Check the `status` and `riskScore` fields in the response:
+
+```json
+{
+  "company": "Tesla Inc.",
+  "ticker": "TSLA",
+  "status": "flagged",
+  "riskScore": 67
+}
+```
+
+### Status values
+
+| Status | Description |
+|--------|-------------|
+| `verified` | Filing passed all checks (score 0-20) |
+| `flagged` | One or more anomalies detected (score 21+) |
+| `pending` | Filing is still being processed |
+
+## Combining risk signals
+
+For the most complete picture, combine multiple signals:
+
+1. **Risk score** — overall filing quality assessment
+2. **Change detection** — what specifically changed from the prior filing ([guide](/irora-sec/guides/change-detection))
+3. **Insider trading** — how insiders are trading around the filing date ([guide](/irora-sec/guides/insider-trading))
+4. **Politician trades** — congressional activity in the same stock ([guide](/irora-sec/guides/politician-trades))
+
+<Note>
+  Risk scores are AI-generated signals, not investment advice. Always perform
+  your own due diligence before making investment decisions based on filing
+  analysis.
+</Note>

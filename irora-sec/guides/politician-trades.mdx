@@ -1,0 +1,174 @@
+---
+title: Politician trades
+description: STOCK Act congressional trading disclosures — trades, leaderboards, and analytics
+icon: landmark
+---
+
+<Info>
+  Irora SEC indexes all STOCK Act disclosures from members of Congress. Three endpoints plus an advanced analytics engine cover trades, leaderboards, alpha computation, and copy-portfolio simulations.
+</Info>
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/politician-trades` | List and filter politician trades |
+| GET | `/politician-trades/top-traders` | Most active politician traders |
+| GET | `/politician-trades/stats` | Aggregate trading statistics |
+
+## List politician trades
+
+Filter by chamber, party, transaction type, and date range.
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/politician-trades?party=D&type=BUY&dateRange=90D"
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/irora-sec/v1/politician-trades?party=D&type=BUY&dateRange=90D",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const { data, total, hasMore } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/irora-sec/v1/politician-trades",
+    params={"party": "D", "type": "BUY", "dateRange": "90D"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+trades = res.json()["data"]
+```
+</CodeGroup>
+
+### Filter parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Free-text search |
+| `chamber` | string | `Senate`, `House`, or `ALL` |
+| `party` | string | `D` (Democrat), `R` (Republican), `I` (Independent), or `ALL` |
+| `type` | string | `BUY`, `SELL`, or `ALL` |
+| `dateRange` | string | `1D`, `7D`, `30D`, `90D`, `1Y`, or `ALL` |
+| `page` | integer | Page number (1-indexed) |
+| `pageSize` | integer | Items per page (max 100) |
+| `sortBy` | string | Field to sort by |
+| `sortDir` | string | `asc` or `desc` |
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Trade ID |
+| `date` | string | Trade date |
+| `politician` | string | Name of the politician |
+| `chamber` | string | `Senate` or `House` |
+| `party` | string | `D`, `R`, or `I` |
+| `state` | string | Two-letter state code |
+| `ticker` | string | Stock ticker |
+| `company` | string | Company name |
+| `type` | string | `BUY` or `SELL` |
+| `amount` | string | Reported value range (e.g. `"$1K-$15K"`) |
+| `estValue` | number | Estimated midpoint value |
+| `daysLate` | integer | Days between trade date and disclosure |
+| `committees` | string[] | Committee memberships |
+| `filingUrl` | string | Link to the STOCK Act disclosure |
+
+## Top traders leaderboard
+
+Rank politicians by total trading value.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/politician-trades/top-traders?dateRange=1Y"
+```
+
+```json
+[
+  {
+    "name": "Tommy Tuberville",
+    "party": "R",
+    "chamber": "Senate",
+    "state": "AL",
+    "trades": 87,
+    "totalValue": 4500000,
+    "topHolding": "NVDA"
+  }
+]
+```
+
+## Aggregate statistics
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/politician-trades/stats?dateRange=90D"
+```
+
+```json
+{
+  "totalTrades": 2341,
+  "buyVolume": 89000000,
+  "sellVolume": 67000000,
+  "avgReportingDelay": 28.5
+}
+```
+
+The `avgReportingDelay` field shows the average number of days between when a trade is executed and when it is disclosed. Under the STOCK Act, members of Congress must disclose trades within 45 days.
+
+## Reporting delay analysis
+
+The `daysLate` field on each trade lets you analyze reporting patterns:
+
+- **0-15 days**: Timely disclosure
+- **16-30 days**: Within typical range
+- **31-45 days**: Near the statutory deadline
+- **45+ days**: Late filing — may indicate attempts to delay disclosure
+
+## Congressional analytics alpha engine
+
+The advanced analytics engine computes performance metrics for politician trades:
+
+### Trade-level alpha
+
+For each trade, the engine calculates stock return vs. S&P 500 return at 30, 90, 180, and 365-day horizons:
+
+```
+alpha = stockReturn - spyReturn
+```
+
+### Politician leaderboard
+
+Politicians are ranked by:
+- **Win rate** — percentage of trades that outperformed the S&P 500
+- **Average alpha** — mean outperformance across all trades
+- **Committee-sector score** — correlation between committee assignments and sector of trades
+
+### Committee-sector correlation
+
+The engine identifies patterns where politicians trade in sectors related to their committee assignments. High correlation scores may indicate informational advantages.
+
+### Copy-portfolio simulation
+
+Simulate the performance of copying a politician's trades with configurable parameters:
+
+| Parameter | Description |
+|-----------|-------------|
+| `politicians` | Which politicians to copy |
+| `startingCapital` | Initial capital |
+| `buyDelay` | Days to wait after disclosure before buying |
+| `useDisclosureDate` | Use disclosure date (true) or trade date (false) |
+| `maxAllocationPct` | Max allocation per position |
+| `tradeTypes` | Which trade types to follow |
+
+The simulation returns an equity curve, total return, alpha vs. S&P 500, max drawdown, and Sharpe ratio.
+
+<Note>
+  STOCK Act disclosures are self-reported by members of Congress. Reporting delays and
+  value ranges (not exact amounts) are inherent limitations of the data. Congressional
+  trading data is informational only and does not constitute investment advice.
+</Note>

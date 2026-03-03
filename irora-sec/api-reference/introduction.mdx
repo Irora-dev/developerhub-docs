@@ -1,0 +1,189 @@
+---
+title: API reference
+description: Interactive reference for the Irora SEC API
+icon: terminal
+---
+
+The Irora SEC API provides programmatic access to SEC filings, insider trades, politician trades, change detection, watchlists, alerts, and AI-powered analysis.
+
+## Base URL
+
+```
+https://api.irora.ai/irora-sec/v1
+```
+
+For local development:
+
+```
+http://localhost:3456/api
+```
+
+## Authentication
+
+All endpoints (except `/health` and `/pricing`) require a Bearer token:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.irora.ai/irora-sec/v1/filings/recent
+```
+
+<Note>
+  Get your API key at [irora.ai/keys](https://irora.ai/keys). The free tier includes 1,000 calls/month.
+</Note>
+
+## Endpoints
+
+The interactive playground below lets you test every endpoint directly from the docs. Click any endpoint to expand it, fill in parameters, and execute requests.
+
+<AccordionGroup>
+  <Accordion title="System" icon="server">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/health` | Service health check |
+    | GET | `/stats` | Platform statistics |
+    | GET | `/dashboard/stats` | Dashboard aggregate stats |
+  </Accordion>
+
+  <Accordion title="Auth" icon="lock">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | POST | `/auth/login` | Authenticate with email and password |
+    | POST | `/auth/signup` | Register a new account |
+    | POST | `/auth/refresh` | Refresh access token |
+    | POST | `/auth/logout` | Invalidate session |
+  </Accordion>
+
+  <Accordion title="Filings" icon="file-lines">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/filings` | List and filter filings |
+    | GET | `/filings/{accession}` | Filing detail with sections, exhibits, and AI summary |
+    | GET | `/filings/recent` | Most recent filings |
+  </Accordion>
+
+  <Accordion title="Insider Trading" icon="user-secret">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/insider-trades` | [List insider trades](/irora-sec/guides/insider-trading) |
+    | GET | `/insider-trades/top-buyers` | Top buyer leaderboard |
+    | GET | `/insider-trades/top-sellers` | Top seller leaderboard |
+    | GET | `/insider-trades/clusters` | Cluster alerts |
+    | GET | `/insider-trades/by-company` | Company-level summaries |
+    | GET | `/insider-trades/stats` | Aggregate statistics |
+  </Accordion>
+
+  <Accordion title="Politician Trades" icon="landmark">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/politician-trades` | [List politician trades](/irora-sec/guides/politician-trades) |
+    | GET | `/politician-trades/top-traders` | Top trader leaderboard |
+    | GET | `/politician-trades/stats` | Aggregate statistics |
+  </Accordion>
+
+  <Accordion title="Search" icon="magnifying-glass">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/search` | [Search filings](/irora-sec/guides/search) by query |
+    | GET | `/search/full-text` | [Full-text search](/irora-sec/guides/search#full-text-search) within documents |
+    | POST | `/search/nl` | [Natural language search](/irora-sec/guides/natural-language-search) |
+  </Accordion>
+
+  <Accordion title="Watchlists" icon="eye">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/watchlists` | [List watchlists](/irora-sec/guides/watchlists) |
+    | POST | `/watchlists` | Create a watchlist |
+    | PUT | `/watchlists/{id}` | Update a watchlist |
+    | DELETE | `/watchlists/{id}` | Delete a watchlist |
+    | POST | `/watchlists/{id}/tickers` | Add a ticker |
+    | DELETE | `/watchlists/{id}/tickers/{ticker}` | Remove a ticker |
+  </Accordion>
+
+  <Accordion title="Alerts" icon="bell">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/alerts` | [List alerts](/irora-sec/guides/alerts) |
+    | PATCH | `/alerts/{id}` | Mark alert as read |
+    | DELETE | `/alerts/{id}` | Dismiss alert |
+    | POST | `/alerts/mark-all-read` | Mark all as read |
+  </Accordion>
+
+  <Accordion title="Change Detection" icon="code-compare">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/changes` | [Detected changes](/irora-sec/guides/change-detection) between filings |
+  </Accordion>
+
+  <Accordion title="API Keys" icon="key">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/api-keys` | List API keys |
+    | POST | `/api-keys` | Create API key (full key returned once) |
+    | DELETE | `/api-keys/{id}` | Revoke API key |
+  </Accordion>
+
+  <Accordion title="User" icon="user">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/user/me` | Get current user profile |
+    | PATCH | `/user/me` | Update profile |
+    | POST | `/user/change-password` | Change password |
+  </Accordion>
+
+  <Accordion title="Reference" icon="book">
+    | Method | Path | Description |
+    |--------|------|-------------|
+    | GET | `/forms` | Form type categories |
+    | GET | `/products` | API product catalog |
+    | GET | `/pricing` | Pricing tiers and limits |
+  </Accordion>
+</AccordionGroup>
+
+## Pagination
+
+All paginated endpoints use a standard response envelope:
+
+```json
+{
+  "data": [...],
+  "total": 142,
+  "page": 1,
+  "pageSize": 20,
+  "hasMore": true
+}
+```
+
+Query parameters: `page` (1-indexed, default 1), `pageSize` (default 20, max 100), `sortBy`, `sortDir` (`asc` or `desc`).
+
+## Date ranges
+
+Many endpoints accept a `dateRange` parameter as a shortcut:
+
+| Value | Meaning |
+|-------|---------|
+| `1D` | Last 24 hours |
+| `7D` | Last 7 days |
+| `30D` | Last 30 days |
+| `90D` | Last 90 days |
+| `1Y` | Last year |
+| `ALL` | All time |
+
+Alternatively, use `dateFrom` and `dateTo` for custom ranges (ISO 8601 dates).
+
+## Webhooks
+
+Irora SEC can push events to your server in real time. See the [webhooks guide](/irora-sec/guides/webhooks) for setup, payload structure, and signature verification.
+
+## Rate limits
+
+Rate limits depend on your subscription tier. See [rate limits](/platform/rate-limits) for details per endpoint and tier, and [pricing](/irora-sec/guides/pricing) for tier comparison.
+
+## SDKs
+
+<Note>
+  Official SDKs are coming soon. In the meantime, use the REST API directly with any HTTP client. The code examples throughout these docs show usage with curl, Node.js, and Python.
+</Note>
+
+## Response format
+
+All responses return JSON. See [standard response format](/platform/errors) for the error envelope structure.

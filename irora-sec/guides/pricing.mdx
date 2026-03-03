@@ -1,0 +1,82 @@
+---
+title: Pricing
+description: Subscription tiers, usage limits, and rate limits
+icon: credit-card
+---
+
+Irora SEC offers three subscription tiers. All tiers include access to the full EDGAR archive (20M+ filings, 30+ years). Higher tiers unlock more API calls, AI summaries, watchlists, alert rules, and programmatic API key access.
+
+## Tiers
+
+<CardGroup cols={3}>
+  <Card title="Explorer" icon="binoculars">
+    **Free** — no credit card required
+
+    - 1,000 API calls/month
+    - 5 AI summaries/month
+    - 3 watchlists
+    - 3 alert rules
+    - No API keys
+  </Card>
+  <Card title="Pro" icon="bolt">
+    **$79/mo** (or $63/mo billed annually)
+
+    - 50,000 API calls/month
+    - 500 AI summaries/month
+    - 25 watchlists
+    - 50 alert rules
+    - 5 API keys
+  </Card>
+  <Card title="API" icon="code">
+    **$199/mo** (or $159/mo billed annually)
+
+    - 200,000 API calls/month
+    - 2,000 AI summaries/month
+    - Unlimited watchlists
+    - Unlimited alert rules
+    - 25 API keys
+  </Card>
+</CardGroup>
+
+## Detailed limits
+
+| Resource | Explorer (free) | Pro ($79/mo) | API ($199/mo) |
+|----------|----------------|--------------|---------------|
+| API calls/month | 1,000 | 50,000 | 200,000 |
+| AI summaries/month | 5 | 500 | 2,000 |
+| Watchlists | 3 | 25 | Unlimited |
+| Alert rules | 3 | 50 | Unlimited |
+| API keys | 0 | 5 | 25 |
+
+## Rate limits
+
+Rate limits apply per API key and are enforced on a per-second basis. When you exceed the limit, the API returns `429 Too Many Requests` with a `Retry-After` header.
+
+See [rate limits](/platform/rate-limits) for per-endpoint limits by tier.
+
+## Usage tracking
+
+Your current usage is available via the dashboard or the API. Each usage record includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `metric` | string | `api_calls`, `ai_summaries`, `exports`, or `searches` |
+| `count` | integer | Current usage count |
+| `limit` | integer | Tier limit for this metric |
+| `periodStart` | string | Billing period start (ISO 8601) |
+| `periodEnd` | string | Billing period end (ISO 8601) |
+
+## Upgrading
+
+Upgrade your tier at any time from the billing settings in the dashboard. Changes take effect immediately and are prorated for the current billing period.
+
+You can also retrieve pricing information programmatically:
+
+```bash
+# No auth required
+curl "https://api.irora.ai/irora-sec/v1/pricing"
+```
+
+## Enterprise
+
+For organizations needing higher limits, dedicated support, SSO, or custom SLAs, contact [support@irora.ai](mailto:support@irora.ai).

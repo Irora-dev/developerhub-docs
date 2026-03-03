@@ -1,0 +1,2161 @@
+openapi: 3.1.0
+info:
+  title: Irora SEC API
+  description: |
+    AI-powered SEC filing intelligence. Search 20M+ filings, track insider trades,
+    monitor congressional trading, detect filing changes, and stream real-time EDGAR data.
+  version: 1.0.0
+  contact:
+    name: Irora Support
+    email: support@irora.ai
+
+servers:
+  - url: https://api.irora.ai/irora-sec/v1
+    description: Production
+  - url: http://localhost:3456/api
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: System
+    description: Health checks and platform statistics
+  - name: Auth
+    description: Authentication and session management
+  - name: Filings
+    description: SEC filing search, retrieval, and detail
+  - name: Insider Trading
+    description: Form 4 insider transaction data
+  - name: Politician Trades
+    description: STOCK Act congressional trading disclosures
+  - name: Search
+    description: Full-text and natural language search
+  - name: Watchlists
+    description: Ticker watchlist management
+  - name: Alerts
+    description: Alert notifications and management
+  - name: Changes
+    description: Cross-filing change detection
+  - name: Dashboard
+    description: Aggregate dashboard data
+  - name: API Keys
+    description: API key management
+  - name: User
+    description: User profile and settings
+  - name: Reference
+    description: Static reference data
+
+paths:
+  # ──────────────────────────────────────────────
+  # System
+  # ──────────────────────────────────────────────
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the current health status of the Irora SEC service. No authentication required.
+      tags: [System]
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: irora-sec
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-03-03T12:00:00.000Z"
+
+  /stats:
+    get:
+      operationId: getStats
+      summary: Platform statistics
+      description: Returns aggregate platform metrics including total filings indexed, filer coverage, form type count, and processing performance.
+      tags: [System]
+      responses:
+        "200":
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+  # ──────────────────────────────────────────────
+  # Auth
+  # ──────────────────────────────────────────────
+  /auth/login:
+    post:
+      operationId: authLogin
+      summary: Log in
+      description: Authenticate with email and password. Returns an access token, refresh token, and user profile.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: s3cret
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid credentials
+
+  /auth/signup:
+    post:
+      operationId: authSignup
+      summary: Sign up
+      description: Register a new user account.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: s3cret
+                name:
+                  type: string
+                  example: Jane Doe
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /auth/refresh:
+    post:
+      operationId: authRefresh
+      summary: Refresh session
+      description: Exchange a refresh token for a new access token.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+                  example: rt_abc123...
+      responses:
+        "200":
+          description: Session refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /auth/logout:
+    post:
+      operationId: authLogout
+      summary: Log out
+      description: Invalidate the current session.
+      tags: [Auth]
+      responses:
+        "204":
+          description: Session invalidated
+
+  # ──────────────────────────────────────────────
+  # Filings
+  # ──────────────────────────────────────────────
+  /filings:
+    get:
+      operationId: listFilings
+      summary: List filings
+      description: List and filter SEC filings with pagination. Supports filtering by form type, ticker, CIK, and date range.
+      tags: [Filings]
+      parameters:
+        - $ref: "#/components/parameters/query"
+        - name: formType
+          in: query
+          description: "Filter by form type (e.g. `10-K`, `8-K`). Comma-separated for multiple."
+          schema:
+            type: string
+            example: "10-K"
+        - name: ticker
+          in: query
+          description: Filter by stock ticker symbol
+          schema:
+            type: string
+            example: AAPL
+        - name: cik
+          in: query
+          description: Filter by SEC Central Index Key
+          schema:
+            type: string
+            example: "0000320193"
+        - name: dateFrom
+          in: query
+          description: Start date (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          description: End date (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/dateRange"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/sortDir"
+      responses:
+        "200":
+          description: Paginated list of filings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Filing"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /filings/{accession}:
+    get:
+      operationId: getFilingDetail
+      summary: Filing detail
+      description: Get a single filing with full detail including sections, exhibits, AI summary, related filings, and XBRL data.
+      tags: [Filings]
+      parameters:
+        - name: accession
+          in: path
+          required: true
+          description: SEC accession number
+          schema:
+            type: string
+            example: "0000320193-23-000077"
+      responses:
+        "200":
+          description: Full filing detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Filing not found
+
+  /filings/recent:
+    get:
+      operationId: getRecentFilings
+      summary: Recent filings
+      description: Returns the 10 most recent SEC filings with metadata including company info, form type, verification status, risk score, and AI-generated summary.
+      tags: [Filings]
+      responses:
+        "200":
+          description: List of recent filings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Filing"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Insider Trading
+  # ──────────────────────────────────────────────
+  /insider-trades:
+    get:
+      operationId: listInsiderTrades
+      summary: List insider trades
+      description: List Form 4 insider transactions with filters for ticker, transaction type, insider role, minimum value, and date range.
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/query"
+        - name: ticker
+          in: query
+          description: Filter by stock ticker
+          schema:
+            type: string
+            example: TSLA
+        - name: type
+          in: query
+          description: Filter by transaction type
+          schema:
+            type: string
+            enum: [BUY, SELL, EXERCISE, ALL]
+            default: ALL
+        - name: role
+          in: query
+          description: Filter by insider role (CEO, CFO, Director, etc.)
+          schema:
+            type: string
+            example: CEO
+        - name: minValue
+          in: query
+          description: Minimum transaction value in USD
+          schema:
+            type: number
+            example: 100000
+        - $ref: "#/components/parameters/dateRange"
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/sortDir"
+      responses:
+        "200":
+          description: Paginated insider trades
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/InsiderTrade"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /insider-trades/top-buyers:
+    get:
+      operationId: getInsiderTopBuyers
+      summary: Top insider buyers
+      description: Leaderboard of the highest-value insider buyers within the specified date range.
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Top buyer leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsiderTopTrader"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /insider-trades/top-sellers:
+    get:
+      operationId: getInsiderTopSellers
+      summary: Top insider sellers
+      description: Leaderboard of the highest-value insider sellers within the specified date range.
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Top seller leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsiderTopTrader"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /insider-trades/clusters:
+    get:
+      operationId: getInsiderClusters
+      summary: Insider trade clusters
+      description: |
+        Detect cluster alerts where multiple insiders at the same company trade within a short window.
+        Clusters are classified as bullish (multiple buys) or bearish (multiple sells).
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Insider cluster alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsiderCluster"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /insider-trades/by-company:
+    get:
+      operationId: getInsiderByCompany
+      summary: Insider activity by company
+      description: Company-level insider activity summaries including buy/sell counts, net value, and overall sentiment.
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Per-company insider summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsiderCompanySummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /insider-trades/stats:
+    get:
+      operationId: getInsiderStats
+      summary: Insider trading statistics
+      description: Aggregate insider trading statistics including total transactions, buy/sell volumes, net flow, and unique insider count.
+      tags: [Insider Trading]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Aggregate insider statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsiderStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Politician Trades
+  # ──────────────────────────────────────────────
+  /politician-trades:
+    get:
+      operationId: listPoliticianTrades
+      summary: List politician trades
+      description: List STOCK Act congressional trading disclosures with filters for chamber, party, transaction type, and date range.
+      tags: [Politician Trades]
+      parameters:
+        - $ref: "#/components/parameters/query"
+        - name: chamber
+          in: query
+          description: Filter by chamber of Congress
+          schema:
+            type: string
+            enum: [Senate, House, ALL]
+            default: ALL
+        - name: party
+          in: query
+          description: Filter by political party
+          schema:
+            type: string
+            enum: [D, R, I, ALL]
+            default: ALL
+        - name: type
+          in: query
+          description: Filter by transaction type
+          schema:
+            type: string
+            enum: [BUY, SELL, ALL]
+            default: ALL
+        - $ref: "#/components/parameters/dateRange"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/sortDir"
+      responses:
+        "200":
+          description: Paginated politician trades
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PoliticianTrade"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /politician-trades/top-traders:
+    get:
+      operationId: getTopPoliticianTraders
+      summary: Top politician traders
+      description: Leaderboard of the most active politician traders by total value.
+      tags: [Politician Trades]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Top trader leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PoliticianTopTrader"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /politician-trades/stats:
+    get:
+      operationId: getPoliticianStats
+      summary: Politician trading statistics
+      description: Aggregate politician trading statistics including total trades, buy/sell volumes, and average reporting delay.
+      tags: [Politician Trades]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Aggregate politician trade statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoliticianStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Search
+  # ──────────────────────────────────────────────
+  /search:
+    get:
+      operationId: searchFilings
+      summary: Search filings
+      description: Search SEC filings by query string. Matches against company name, ticker, form type, and summary text.
+      tags: [Search]
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Search query string
+          schema:
+            type: string
+            example: revenue growth
+        - name: formType
+          in: query
+          schema:
+            type: string
+        - name: ticker
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/dateRange"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/sortDir"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SearchResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /search/full-text:
+    get:
+      operationId: fullTextSearch
+      summary: Full-text search
+      description: |
+        Full-text search within filing documents. Supports boolean operators (`AND`, `OR`, `NOT`),
+        phrase matching with quotes, and wildcard patterns. Returns highlighted snippets with match context.
+      tags: [Search]
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: "Full-text query. Supports boolean operators, phrase matching (`\"material weakness\"`), and wildcards (`restat*`)."
+          schema:
+            type: string
+            example: '"material weakness" AND restatement'
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+      responses:
+        "200":
+          description: Full-text search results with highlighted snippets
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FullTextMatch"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /search/nl:
+    post:
+      operationId: naturalLanguageSearch
+      summary: Natural language search
+      description: |
+        Search using natural language queries. The engine parses your query to extract intent,
+        entities (tickers, companies, people), date ranges, and filters automatically.
+
+        Example queries:
+        - "Apple 10-K filings from last year"
+        - "insider buys over $1M at Tesla"
+        - "democrat senator trades in tech stocks"
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NLSearchRequest"
+      responses:
+        "200":
+          description: Unified search results with parsed query metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NLSearchResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Watchlists
+  # ──────────────────────────────────────────────
+  /watchlists:
+    get:
+      operationId: listWatchlists
+      summary: List watchlists
+      description: Get all watchlists for the authenticated user.
+      tags: [Watchlists]
+      responses:
+        "200":
+          description: User watchlists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Watchlist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createWatchlist
+      summary: Create watchlist
+      description: Create a new watchlist. Subject to tier limits (Explorer 3, Pro 25, API unlimited).
+      tags: [Watchlists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, tickers]
+              properties:
+                name:
+                  type: string
+                  example: Tech Giants
+                description:
+                  type: string
+                  example: Major tech companies to monitor
+                tickers:
+                  type: array
+                  items:
+                    type: string
+                  example: ["AAPL", "MSFT", "GOOGL"]
+      responses:
+        "201":
+          description: Watchlist created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watchlist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /watchlists/{id}:
+    put:
+      operationId: updateWatchlist
+      summary: Update watchlist
+      description: Update a watchlist's name, description, or tickers.
+      tags: [Watchlists]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: wl_123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                tickers:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Watchlist updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watchlist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Watchlist not found
+    delete:
+      operationId: deleteWatchlist
+      summary: Delete watchlist
+      description: Permanently delete a watchlist.
+      tags: [Watchlists]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Watchlist deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /watchlists/{id}/tickers:
+    post:
+      operationId: addWatchlistTicker
+      summary: Add ticker to watchlist
+      description: Add a single ticker to an existing watchlist.
+      tags: [Watchlists]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ticker]
+              properties:
+                ticker:
+                  type: string
+                  example: NVDA
+      responses:
+        "200":
+          description: Ticker added, returns updated watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watchlist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /watchlists/{id}/tickers/{ticker}:
+    delete:
+      operationId: removeWatchlistTicker
+      summary: Remove ticker from watchlist
+      description: Remove a single ticker from an existing watchlist.
+      tags: [Watchlists]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+            example: NVDA
+      responses:
+        "200":
+          description: Ticker removed, returns updated watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watchlist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Alerts
+  # ──────────────────────────────────────────────
+  /alerts:
+    get:
+      operationId: listAlerts
+      summary: List alerts
+      description: Get alerts for the authenticated user. Optionally filter to unread only.
+      tags: [Alerts]
+      parameters:
+        - name: unreadOnly
+          in: query
+          description: Filter to unread alerts only
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: User alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /alerts/{id}:
+    patch:
+      operationId: updateAlert
+      summary: Mark alert as read
+      description: Update an alert's read status.
+      tags: [Alerts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                read:
+                  type: boolean
+                  example: true
+      responses:
+        "204":
+          description: Alert updated
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      operationId: deleteAlert
+      summary: Dismiss alert
+      description: Permanently dismiss (delete) an alert.
+      tags: [Alerts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Alert dismissed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /alerts/mark-all-read:
+    post:
+      operationId: markAllAlertsRead
+      summary: Mark all alerts read
+      description: Mark all alerts as read for the authenticated user.
+      tags: [Alerts]
+      responses:
+        "204":
+          description: All alerts marked as read
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Change Detection
+  # ──────────────────────────────────────────────
+  /changes:
+    get:
+      operationId: listChanges
+      summary: Detected changes
+      description: |
+        Get detected changes between sequential SEC filings. Each change is classified by severity
+        (low, medium, high) using a 17-rule classifier that evaluates section type, change type,
+        and magnitude.
+      tags: [Changes]
+      parameters:
+        - $ref: "#/components/parameters/dateRange"
+      responses:
+        "200":
+          description: Detected filing changes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DetectedChange"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Dashboard
+  # ──────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      summary: Dashboard statistics
+      description: Aggregate dashboard statistics for the authenticated user.
+      tags: [Dashboard]
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # API Keys
+  # ──────────────────────────────────────────────
+  /api-keys:
+    get:
+      operationId: listApiKeys
+      summary: List API keys
+      description: List all API keys for the authenticated user. Only the key prefix is returned (the full key is only shown at creation).
+      tags: [API Keys]
+      responses:
+        "200":
+          description: User API keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createApiKey
+      summary: Create API key
+      description: |
+        Create a new API key. The full key is only returned in this response — store it immediately.
+        It cannot be retrieved again. Subject to tier limits (Explorer 0, Pro 5, API 25).
+      tags: [API Keys]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: My Integration
+      responses:
+        "201":
+          description: API key created (full key returned only once)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiKey"
+                  - type: object
+                    properties:
+                      key:
+                        type: string
+                        description: The full API key (only returned at creation)
+                        example: irora_sk_a1b2c3d4e5f6...
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api-keys/{id}:
+    delete:
+      operationId: deleteApiKey
+      summary: Revoke API key
+      description: Permanently revoke (deactivate) an API key.
+      tags: [API Keys]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: API key revoked
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # User
+  # ──────────────────────────────────────────────
+  /user/me:
+    get:
+      operationId: getCurrentUser
+      summary: Get current user
+      description: Get the authenticated user's profile.
+      tags: [User]
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      operationId: updateCurrentUser
+      summary: Update profile
+      description: Update the authenticated user's name or email.
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /user/change-password:
+    post:
+      operationId: changePassword
+      summary: Change password
+      description: Change the authenticated user's password.
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldPassword, newPassword]
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        "204":
+          description: Password changed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ──────────────────────────────────────────────
+  # Reference
+  # ──────────────────────────────────────────────
+  /forms:
+    get:
+      operationId: getFormTypes
+      summary: Form type categories
+      description: Returns the full reference list of 400+ SEC form types organized into 8 categories.
+      tags: [Reference]
+      responses:
+        "200":
+          description: Form type categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FormCategory"
+
+  /products:
+    get:
+      operationId: getProducts
+      summary: API product suite
+      description: Returns the full catalog of available APIs organized by category.
+      tags: [Reference]
+      responses:
+        "200":
+          description: API product catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apis:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApiCategory"
+
+  /pricing:
+    get:
+      operationId: getPricing
+      summary: Pricing tiers
+      description: Returns subscription tier details including pricing, features, rate limits, and usage allowances.
+      tags: [Reference]
+      security: []
+      responses:
+        "200":
+          description: Pricing information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PricingTier"
+
+# ════════════════════════════════════════════════
+# Components
+# ════════════════════════════════════════════════
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "API key passed as a Bearer token. Get your key at https://irora.ai/keys"
+
+  parameters:
+    query:
+      name: query
+      in: query
+      description: Search query string
+      schema:
+        type: string
+    dateRange:
+      name: dateRange
+      in: query
+      description: Predefined date range shortcut
+      schema:
+        type: string
+        enum: [1D, 7D, 30D, 90D, 1Y, ALL]
+    page:
+      name: page
+      in: query
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pageSize:
+      name: pageSize
+      in: query
+      description: Items per page (max 100)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    sortBy:
+      name: sortBy
+      in: query
+      description: Field name to sort by
+      schema:
+        type: string
+    sortDir:
+      name: sortDir
+      in: query
+      description: Sort direction
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
+  schemas:
+    # ── Generic ──
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: UNAUTHORIZED
+        message:
+          type: string
+          description: Human-readable error message
+          example: Missing or invalid API key
+        details:
+          type: object
+          additionalProperties: true
+
+    PaginationEnvelope:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total items matching the query
+          example: 142
+        page:
+          type: integer
+          description: Current page (1-indexed)
+          example: 1
+        pageSize:
+          type: integer
+          description: Items per page
+          example: 20
+        hasMore:
+          type: boolean
+          description: Whether more pages exist
+          example: true
+
+    # ── Auth ──
+    AuthSession:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        accessToken:
+          type: string
+          description: JWT access token (15 min TTL)
+          example: eyJhbGciOiJIUzI1NiIs...
+        refreshToken:
+          type: string
+          description: Opaque refresh token (7 day TTL)
+          example: rt_abc123...
+        expiresAt:
+          type: string
+          format: date-time
+          description: Access token expiry
+
+    # ── User ──
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: usr_abc123
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: Jane Doe
+        tier:
+          type: string
+          enum: [explorer, pro, api]
+          description: Subscription tier
+          example: pro
+        createdAt:
+          type: string
+          format: date-time
+        apiKeyCount:
+          type: integer
+          example: 2
+
+    # ── Platform Stats ──
+    PlatformStats:
+      type: object
+      properties:
+        totalFilings:
+          type: integer
+          description: Total SEC filings indexed
+          example: 20000000
+        totalFilers:
+          type: integer
+          description: Unique filing entities tracked
+          example: 800000
+        formTypes:
+          type: integer
+          description: Number of distinct form types
+          example: 400
+        historicalYears:
+          type: integer
+          description: Years of historical data
+          example: 30
+        indexingLatency:
+          type: string
+          description: Average time from EDGAR publication to index
+          example: "<300ms"
+        avgProcessingTime:
+          type: string
+          description: Average filing processing time
+          example: "2.3s"
+
+    # ── Filings ──
+    Filing:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fil_001
+        accession:
+          type: string
+          description: SEC accession number
+          example: "0000320193-23-000077"
+        company:
+          type: string
+          example: Apple Inc.
+        ticker:
+          type: string
+          example: AAPL
+        cik:
+          type: string
+          example: "0000320193"
+        formType:
+          type: string
+          example: 10-K
+        title:
+          type: string
+          example: Annual Report
+        filedDate:
+          type: string
+          format: date
+          example: "2026-01-31"
+        acceptedDate:
+          type: string
+          format: date
+        periodOfReport:
+          type: string
+          format: date
+        documentUrl:
+          type: string
+          format: uri
+        snippet:
+          type: string
+          description: Short plain-text snippet for search results
+        status:
+          type: string
+          enum: [verified, flagged, pending]
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: AI-generated risk score
+        summary:
+          type: string
+          description: AI-generated filing summary
+
+    FilingDetail:
+      allOf:
+        - $ref: "#/components/schemas/Filing"
+        - type: object
+          properties:
+            sections:
+              type: array
+              items:
+                $ref: "#/components/schemas/FilingSection"
+            exhibits:
+              type: array
+              items:
+                $ref: "#/components/schemas/FilingExhibit"
+            aiSummary:
+              $ref: "#/components/schemas/AISummary"
+            relatedFilings:
+              type: array
+              items:
+                $ref: "#/components/schemas/Filing"
+            xbrlData:
+              type: object
+              additionalProperties: true
+
+    FilingSection:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+          example: "Item 1A. Risk Factors"
+        part:
+          type: string
+        content:
+          type: string
+
+    FilingExhibit:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          example: "EX-31.1"
+        description:
+          type: string
+          example: Certification of CEO
+        url:
+          type: string
+          format: uri
+
+    AISummary:
+      type: object
+      properties:
+        id:
+          type: string
+        filingId:
+          type: string
+        summary:
+          type: string
+        keyFindings:
+          type: array
+          items:
+            type: string
+        riskFactors:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: AI confidence score
+        generatedAt:
+          type: string
+          format: date-time
+
+    # ── Insider Trading ──
+    InsiderTrade:
+      type: object
+      properties:
+        id:
+          type: string
+          example: it_001
+        date:
+          type: string
+          format: date
+          example: "2026-02-15"
+        company:
+          type: string
+          example: Tesla Inc.
+        ticker:
+          type: string
+          example: TSLA
+        insider:
+          type: string
+          description: Name of the insider
+          example: Elon Musk
+        title:
+          type: string
+          description: Insider role
+          example: CEO
+        type:
+          type: string
+          enum: [BUY, SELL, EXERCISE]
+        shares:
+          type: number
+          example: 10000
+        price:
+          type: number
+          example: 245.50
+        value:
+          type: number
+          description: Total transaction value in USD
+          example: 2455000
+        ownershipAfter:
+          type: string
+          example: "411,063,727"
+        filingUrl:
+          type: string
+          format: uri
+        accession:
+          type: string
+
+    InsiderTopTrader:
+      type: object
+      properties:
+        rank:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Jensen Huang
+        company:
+          type: string
+          example: NVIDIA Corp.
+        ticker:
+          type: string
+          example: NVDA
+        totalValue:
+          type: number
+          example: 48000000
+        transactions:
+          type: integer
+          example: 12
+        avgPrice:
+          type: number
+          example: 890.50
+
+    InsiderCluster:
+      type: object
+      properties:
+        id:
+          type: string
+        company:
+          type: string
+          example: Microsoft Corp.
+        ticker:
+          type: string
+          example: MSFT
+        insiderCount:
+          type: integer
+          description: Number of insiders who traded
+          example: 4
+        window:
+          type: string
+          description: Time window of the cluster
+          example: "5 days"
+        totalValue:
+          type: number
+          example: 12000000
+        type:
+          type: string
+          enum: [bullish, bearish]
+        badge:
+          type: string
+          example: Cluster Buy
+        description:
+          type: string
+
+    InsiderCompanySummary:
+      type: object
+      properties:
+        company:
+          type: string
+          example: Apple Inc.
+        ticker:
+          type: string
+          example: AAPL
+        buys:
+          type: integer
+          example: 8
+        sells:
+          type: integer
+          example: 3
+        netValue:
+          type: number
+          example: 5200000
+        insiderCount:
+          type: integer
+          example: 5
+        sentiment:
+          type: string
+          enum: [bullish, bearish, neutral]
+
+    InsiderStats:
+      type: object
+      properties:
+        totalTransactions:
+          type: integer
+          example: 1247
+        buyVolume:
+          type: number
+          example: 450000000
+        sellVolume:
+          type: number
+          example: 320000000
+        netFlow:
+          type: number
+          description: Buy volume minus sell volume
+          example: 130000000
+        uniqueInsiders:
+          type: integer
+          example: 312
+        companiesActive:
+          type: integer
+          example: 189
+
+    # ── Politician Trades ──
+    PoliticianTrade:
+      type: object
+      properties:
+        id:
+          type: string
+          example: pt_001
+        date:
+          type: string
+          format: date
+          example: "2026-02-10"
+        politician:
+          type: string
+          example: Nancy Pelosi
+        chamber:
+          type: string
+          enum: [Senate, House]
+        party:
+          type: string
+          enum: [D, R, I]
+        state:
+          type: string
+          example: CA
+        ticker:
+          type: string
+          example: NVDA
+        company:
+          type: string
+          example: NVIDIA Corp.
+        type:
+          type: string
+          enum: [BUY, SELL]
+        amount:
+          type: string
+          description: Reported value range
+          example: "$1K-$15K"
+        estValue:
+          type: number
+          description: Estimated midpoint value
+          example: 8000
+        daysLate:
+          type: integer
+          description: Days between trade and disclosure
+          example: 32
+        committees:
+          type: array
+          items:
+            type: string
+          example: ["Financial Services"]
+        filingUrl:
+          type: string
+          format: uri
+
+    PoliticianTopTrader:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tommy Tuberville
+        party:
+          type: string
+          enum: [D, R, I]
+        chamber:
+          type: string
+          enum: [Senate, House]
+        state:
+          type: string
+          example: AL
+        trades:
+          type: integer
+          example: 87
+        totalValue:
+          type: number
+          example: 4500000
+        topHolding:
+          type: string
+          example: NVDA
+
+    PoliticianStats:
+      type: object
+      properties:
+        totalTrades:
+          type: integer
+          example: 2341
+        buyVolume:
+          type: number
+          example: 89000000
+        sellVolume:
+          type: number
+          example: 67000000
+        avgReportingDelay:
+          type: number
+          description: Average days between trade and disclosure
+          example: 28.5
+
+    # ── Search ──
+    SearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+        company:
+          type: string
+          example: Apple Inc.
+        ticker:
+          type: string
+          example: AAPL
+        formType:
+          type: string
+          example: 10-K
+        title:
+          type: string
+        snippet:
+          type: string
+          description: Highlighted match snippet
+        filedDate:
+          type: string
+          format: date
+        accession:
+          type: string
+        score:
+          type: number
+          description: Relevance score
+
+    FullTextMatch:
+      type: object
+      properties:
+        id:
+          type: string
+        accession:
+          type: string
+        company:
+          type: string
+        ticker:
+          type: string
+        formType:
+          type: string
+        filedDate:
+          type: string
+          format: date
+        section:
+          type: string
+          description: Filing section where match was found
+          example: "Item 1A. Risk Factors"
+        page:
+          type: integer
+        matchCount:
+          type: integer
+          description: Number of matches in this section
+          example: 3
+        highlights:
+          type: array
+          description: HTML-safe highlighted snippets
+          items:
+            type: string
+        context:
+          type: string
+
+    NLSearchRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          description: Natural language search query
+          example: "insider buys at Apple over $1M last 90 days"
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        types:
+          type: array
+          description: Filter result types
+          items:
+            type: string
+            enum: [filing, insider_trade, politician_trade, company]
+
+    NLSearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnifiedSearchResult"
+        total:
+          type: integer
+        query:
+          $ref: "#/components/schemas/ParsedQuery"
+        queryTime:
+          type: number
+          description: Query execution time in ms
+        facets:
+          type: object
+          properties:
+            types:
+              type: object
+              additionalProperties:
+                type: integer
+            tickers:
+              type: array
+              items:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                  count:
+                    type: integer
+            dateRange:
+              type: object
+              properties:
+                earliest:
+                  type: string
+                  format: date
+                latest:
+                  type: string
+                  format: date
+
+    UnifiedSearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [filing, insider_trade, politician_trade, company]
+        title:
+          type: string
+        subtitle:
+          type: string
+        snippet:
+          type: string
+        score:
+          type: number
+        date:
+          type: string
+          format: date
+        ticker:
+          type: string
+        company:
+          type: string
+        href:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ParsedQuery:
+      type: object
+      properties:
+        raw:
+          type: string
+          description: Original query text
+        intent:
+          type: string
+          enum: [filing, insider_trade, politician_trade, company, all]
+        entities:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [ticker, company, person, form_type, party, chamber, sector]
+              value:
+                type: string
+              normalized:
+                type: string
+              confidence:
+                type: number
+        filters:
+          type: object
+          properties:
+            transactionType:
+              type: string
+              enum: [BUY, SELL, EXERCISE]
+            minValue:
+              type: number
+            maxValue:
+              type: number
+            formType:
+              type: string
+            party:
+              type: string
+            chamber:
+              type: string
+            role:
+              type: string
+        dateRange:
+          type: object
+          nullable: true
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        keywords:
+          type: array
+          items:
+            type: string
+
+    # ── Watchlists ──
+    Watchlist:
+      type: object
+      properties:
+        id:
+          type: string
+          example: wl_123
+        name:
+          type: string
+          example: Tech Giants
+        description:
+          type: string
+        tickers:
+          type: array
+          items:
+            type: string
+          example: ["AAPL", "MSFT", "GOOGL"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Alerts ──
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          example: alert_456
+        type:
+          type: string
+          enum: [new_filing, insider_trade, price_move, cluster_detected, politician_trade]
+          description: Alert trigger type
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        title:
+          type: string
+          example: "New 10-K filed by Apple Inc."
+        message:
+          type: string
+        ticker:
+          type: string
+        company:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        actionUrl:
+          type: string
+
+    # ── Changes ──
+    DetectedChange:
+      type: object
+      properties:
+        id:
+          type: string
+        company:
+          type: string
+          example: Apple Inc.
+        ticker:
+          type: string
+          example: AAPL
+        formType:
+          type: string
+          example: 10-K
+        changeType:
+          type: string
+          enum: [added, modified, removed]
+        severity:
+          type: string
+          enum: [low, medium, high]
+        section:
+          type: string
+          description: Filing section where change was detected
+          example: "Item 1A. Risk Factors"
+        description:
+          type: string
+          example: "New risk factor added regarding supply chain disruptions"
+        detectedAt:
+          type: string
+          format: date-time
+        diffPreview:
+          type: object
+          properties:
+            before:
+              type: string
+            after:
+              type: string
+
+    # ── Dashboard ──
+    DashboardStats:
+      type: object
+      properties:
+        totalFilingsToday:
+          type: integer
+          example: 342
+        insiderTradesThisWeek:
+          type: integer
+          example: 1247
+        watchlistAlerts:
+          type: integer
+          example: 8
+        aiSummariesGenerated:
+          type: integer
+          example: 15420
+
+    # ── API Keys ──
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          example: key_789
+        name:
+          type: string
+          example: My Integration
+        keyPrefix:
+          type: string
+          description: First 8 characters of the key
+          example: irora_sk
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          example: true
+
+    # ── Reference ──
+    FormCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Annual & Quarterly Reports
+        forms:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: 10-K
+              description:
+                type: string
+                example: Annual report
+              sections:
+                type: integer
+                example: 21
+
+    ApiCategory:
+      type: object
+      properties:
+        category:
+          type: string
+          example: Core Filing APIs
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              endpoint:
+                type: string
+
+    PricingTier:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Pro
+        monthlyPrice:
+          type: integer
+          nullable: true
+          example: 79
+        annualPrice:
+          type: integer
+          nullable: true
+          example: 63
+        features:
+          type: array
+          items:
+            type: string
+        limits:
+          type: object
+          properties:
+            apiCalls:
+              type: integer
+            aiSummaries:
+              type: integer
+            watchlists:
+              type: integer
+            alertRules:
+              type: integer
+            apiKeys:
+              type: integer
+        rateLimits:
+          type: object
+          additionalProperties:
+            type: string

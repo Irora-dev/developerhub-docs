@@ -1,0 +1,186 @@
+---
+title: Insider trading
+description: Track Form 4 insider trades — buyers, sellers, clusters, and company-level activity
+icon: user-secret
+---
+
+<Info>
+  Irora SEC indexes every Form 4 filed with the SEC within minutes of EDGAR publication. Six endpoints give you real-time visibility into trades by corporate officers, directors, and 10%+ owners.
+</Info>
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/insider-trades` | List and filter insider trades |
+| GET | `/insider-trades/top-buyers` | Top insider buyers leaderboard |
+| GET | `/insider-trades/top-sellers` | Top insider sellers leaderboard |
+| GET | `/insider-trades/clusters` | Cluster alerts (multiple insiders, same company) |
+| GET | `/insider-trades/by-company` | Company-level insider activity summaries |
+| GET | `/insider-trades/stats` | Aggregate insider trading statistics |
+
+## List insider trades
+
+Filter by ticker, transaction type, insider role, minimum value, and date range.
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades?ticker=TSLA&type=BUY&dateRange=30D"
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/irora-sec/v1/insider-trades?ticker=TSLA&type=BUY&dateRange=30D",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const { data, total, hasMore } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/irora-sec/v1/insider-trades",
+    params={"ticker": "TSLA", "type": "BUY", "dateRange": "30D"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+trades = res.json()["data"]
+```
+</CodeGroup>
+
+### Filter parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Free-text search |
+| `ticker` | string | Stock ticker symbol |
+| `type` | string | `BUY`, `SELL`, `EXERCISE`, or `ALL` |
+| `role` | string | Insider role: `CEO`, `CFO`, `CTO`, `COO`, `VP`, `Director`, `10% Owner` |
+| `minValue` | number | Minimum transaction value in USD |
+| `dateRange` | string | `1D`, `7D`, `30D`, `90D`, `1Y`, or `ALL` |
+| `dateFrom` | string | Start date (ISO 8601) |
+| `dateTo` | string | End date (ISO 8601) |
+| `page` | integer | Page number (1-indexed, default: 1) |
+| `pageSize` | integer | Items per page (default: 20, max: 100) |
+| `sortBy` | string | Field to sort by |
+| `sortDir` | string | `asc` or `desc` |
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Trade ID |
+| `date` | string | Trade date |
+| `company` | string | Company name |
+| `ticker` | string | Stock ticker |
+| `insider` | string | Insider name |
+| `title` | string | Role (CEO, CFO, Director, etc.) |
+| `type` | string | `BUY`, `SELL`, or `EXERCISE` |
+| `shares` | number | Number of shares |
+| `price` | number | Price per share |
+| `value` | number | Total transaction value in USD |
+| `ownershipAfter` | string | Shares owned after transaction |
+| `filingUrl` | string | Link to the Form 4 filing |
+| `accession` | string | SEC accession number |
+
+## Top buyers and sellers
+
+Leaderboards rank insiders by total transaction value within a date range.
+
+```bash
+# Top buyers in the last 30 days
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades/top-buyers?dateRange=30D"
+
+# Top sellers in the last 90 days
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades/top-sellers?dateRange=90D"
+```
+
+Each entry includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rank` | integer | Position on the leaderboard |
+| `name` | string | Insider name |
+| `company` | string | Company name |
+| `ticker` | string | Stock ticker |
+| `totalValue` | number | Total transaction value |
+| `transactions` | integer | Number of transactions |
+| `avgPrice` | number | Average price per share |
+
+## Cluster detection
+
+Cluster alerts fire when multiple insiders at the same company trade within a short window. This can signal coordinated conviction before a major event.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades/clusters?dateRange=30D"
+```
+
+```json
+[
+  {
+    "id": "cl_001",
+    "company": "Microsoft Corp.",
+    "ticker": "MSFT",
+    "insiderCount": 4,
+    "window": "5 days",
+    "totalValue": 12000000,
+    "type": "bullish",
+    "badge": "Cluster Buy",
+    "description": "4 insiders bought within a 5-day window"
+  }
+]
+```
+
+Clusters are classified as:
+- **bullish** — multiple insiders buying
+- **bearish** — multiple insiders selling
+
+## Company-level activity
+
+Aggregate insider activity per company — useful for screening which companies have the most insider conviction.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades/by-company?dateRange=30D"
+```
+
+Each company summary includes buy/sell counts, net value, insider count, and an overall `sentiment` classification (`bullish`, `bearish`, or `neutral`).
+
+## Aggregate statistics
+
+Get high-level insider trading metrics across the market.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/insider-trades/stats?dateRange=30D"
+```
+
+```json
+{
+  "totalTransactions": 1247,
+  "buyVolume": 450000000,
+  "sellVolume": 320000000,
+  "netFlow": 130000000,
+  "uniqueInsiders": 312,
+  "companiesActive": 189
+}
+```
+
+## Use cases
+
+<AccordionGroup>
+  <Accordion title="Compliance monitoring" icon="shield-halved">
+    Track insider trades for companies in your portfolio or coverage universe. Set up [watchlists](/irora-sec/guides/watchlists) and [alerts](/irora-sec/guides/alerts) to get notified when insiders trade in companies you follow.
+  </Accordion>
+  <Accordion title="Alpha signals" icon="chart-line">
+    Research shows insider buying clusters are among the strongest predictive signals for future stock performance. Use the cluster detection endpoint to identify coordinated buying patterns, then cross-reference with [change detection](/irora-sec/guides/change-detection) to see if the company recently amended key filing sections.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Insider trading data is derived from Form 4 filings with the SEC. Data is informational only and does not constitute investment advice.
+</Warning>

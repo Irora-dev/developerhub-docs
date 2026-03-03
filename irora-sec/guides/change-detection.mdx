@@ -1,0 +1,176 @@
+---
+title: Change detection
+description: Detect and classify changes between sequential SEC filings
+icon: code-compare
+---
+
+<Info>
+  Irora SEC automatically compares sequential filings and surfaces material changes. A **17-rule severity engine** classifies each change by section type, change type, and magnitude.
+</Info>
+
+## Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/changes` | List detected changes with severity classification |
+
+## List detected changes
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/changes?dateRange=7D"
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/irora-sec/v1/changes?dateRange=7D",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const changes = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/irora-sec/v1/changes",
+    params={"dateRange": "7D"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+changes = res.json()
+```
+</CodeGroup>
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Change ID |
+| `company` | string | Company name |
+| `ticker` | string | Stock ticker |
+| `formType` | string | Filing type (10-K, 10-Q, etc.) |
+| `changeType` | string | `added`, `modified`, or `removed` |
+| `severity` | string | `low`, `medium`, or `high` |
+| `section` | string | Filing section where change was detected |
+| `description` | string | Human-readable description of the change |
+| `detectedAt` | string | ISO 8601 timestamp |
+| `diffPreview` | object | Optional `before` and `after` text snippets |
+
+### Example response
+
+```json
+[
+  {
+    "id": "chg_001",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "formType": "10-K",
+    "changeType": "added",
+    "severity": "high",
+    "section": "Item 1A. Risk Factors",
+    "description": "New risk factor added regarding supply chain disruptions",
+    "detectedAt": "2026-03-01T10:30:00Z",
+    "diffPreview": {
+      "before": "",
+      "after": "The Company faces risks related to global supply chain disruptions..."
+    }
+  }
+]
+```
+
+## Severity classification
+
+Changes are classified by a 17-rule engine that runs in priority order (first match wins). The rules evaluate three inputs:
+
+1. **Section label** — which part of the filing changed
+2. **Change type** — whether content was added, modified, or removed
+3. **Change percent** — how much of the section was affected
+
+### High severity
+
+| # | Section | Condition | Reason |
+|---|---------|-----------|--------|
+| 1 | Risk Factors | Added | New risk factor added |
+| 2 | Risk Factors | Removed | Risk factor removed |
+| 3 | Risk Factors | Modified, >30% changed | Substantial risk factor revision |
+| 5 | Revenue Recognition | Any change | Revenue recognition policy change |
+| 6 | MD&A | Modified, >25% changed | Significant MD&A revision |
+| 8 | Financial Statements | Any change | Financial statement change |
+| 9 | Legal Proceedings | Added | New legal proceeding disclosed |
+
+### Medium severity
+
+| # | Section | Condition | Reason |
+|---|---------|-----------|--------|
+| 4 | Risk Factors | Modified, 30% or less changed | Risk factor language updated |
+| 7 | MD&A | Modified, 25% or less changed | MD&A language updated |
+| 10 | Legal Proceedings | Modified | Legal proceeding update |
+| 11 | Forward-Looking Statements | Modified | Forward-looking statement change |
+| 12 | Compensation | Modified | Executive compensation change |
+| 13 | Charter / Bylaws | Modified | Governance document change |
+| 14 | Any section | Added, >50% new content | Substantial new content |
+| 15 | Any section | Modified, >50% changed | Substantial revision |
+
+### Low severity
+
+| # | Section | Condition | Reason |
+|---|---------|-----------|--------|
+| 16 | Any section | Default | Minor language change |
+
+## Filing comparison detail
+
+When you retrieve a specific filing comparison, you get section-level diffs:
+
+```typescript
+interface FilingComparison {
+  id: string;
+  currentFiling: Filing;
+  previousFiling: Filing;
+  sectionDiffs: SectionDiff[];
+  summary: {
+    totalChanges: number;
+    highSeverity: number;
+    mediumSeverity: number;
+    lowSeverity: number;
+    sectionsChanged: number;
+    sectionsUnchanged: number;
+  };
+  computedAt: string;
+}
+```
+
+Each `SectionDiff` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sectionId` | string | Section identifier |
+| `sectionLabel` | string | Human-readable label |
+| `changeType` | string | `added`, `modified`, or `removed` |
+| `severity` | string | `low`, `medium`, or `high` |
+| `severityReason` | string | Why this severity was assigned |
+| `summary` | string | AI-generated change summary |
+| `diffChunks` | array | Array of `{type, value}` diff segments |
+| `wordsAdded` | integer | Words added |
+| `wordsRemoved` | integer | Words removed |
+| `changePercent` | number | Percentage of section that changed |
+
+## Use cases
+
+<AccordionGroup>
+  <Accordion title="Regulatory compliance" icon="shield-halved">
+    Monitor portfolio companies for material changes in risk factors, legal proceedings, and revenue recognition policies. Set up [alerts](/irora-sec/guides/alerts) to get notified when high-severity changes are detected.
+  </Accordion>
+  <Accordion title="Fundamental analysis" icon="chart-line">
+    Track how a company's narrative evolves over time. Changes in MD&A language, forward-looking statements, and compensation disclosures often precede significant business developments.
+  </Accordion>
+  <Accordion title="Cross-reference with insider activity" icon="user-secret">
+    High-severity filing changes combined with unusual [insider trading](/irora-sec/guides/insider-trading) patterns can be a powerful signal. Use both data sources together to build a more complete picture.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Change detection compares the most recent filing of a given type with the immediately
+  prior filing of the same type from the same company. Not all sections are available for
+  comparison in every filing type.
+</Note>

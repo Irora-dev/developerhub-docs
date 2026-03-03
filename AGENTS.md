@@ -11,8 +11,7 @@
 ## Terminology
 
 - **Irora** — the parent company/platform
-- **VerifAI SEC** — SEC filing intelligence product (not "VerifAI" alone, always include "SEC")
-- **SanctionsSeeker** — sanctions screening product (one word, camelCase)
+- **Irora SEC** — SEC filing intelligence product (always include "SEC" after "Irora")
 - **filing** — an SEC filing document (not "report" or "document")
 - **form type** — e.g. 10-K, 8-K, DEF 14A (always use the official SEC form code)
 - **API key** — not "token" or "secret" (except in code context)
@@ -32,7 +31,7 @@
 
 - Document public APIs only — no internal admin endpoints
 - Do not expose actual API keys, secrets, or internal infrastructure details
-- Each product's docs live in their own directory (e.g., `verifai-sec/`, `sanctionseeker/`)
+- Each product's docs live in their own directory (e.g., `irora-sec/`)
 - Platform-level docs (auth, errors, rate limits) live in `platform/`
 - Reusable content goes in `snippets/shared/`
 
@@ -52,15 +51,15 @@ Create a JSON file with **all 10 fields** (all required):
 
 ```json
 {
-  "productName": "SanctionsSeeker",
-  "productSlug": "sanctionseeker",
-  "productTagline": "Global sanctions screening API",
+  "productName": "New Product",
+  "productSlug": "new-product",
+  "productTagline": "One-line product description",
   "productDescription": "Full paragraph describing the product (20+ chars).",
-  "productDescriptionShort": "sanctions screening data",
+  "productDescriptionShort": "short product description",
   "exampleEndpoint": "search",
-  "guideTitle": "Search syntax",
-  "guideDescription": "How to write search queries",
-  "icon": "shield-halved",
+  "guideTitle": "Getting started guide",
+  "guideDescription": "How to use the product",
+  "icon": "bolt",
   "hasOpenApi": true
 }
 ```
@@ -84,7 +83,7 @@ Create a JSON file with **all 10 fields** (all required):
 
 ### Slug conventions
 
-- Lowercase, hyphenated: `sanctionseeker`, `verifai-sec`
+- Lowercase, hyphenated: `irora-sec`, `new-product`
 - Match the product's API path segment
 - No leading/trailing hyphens
 

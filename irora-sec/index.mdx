@@ -1,0 +1,71 @@
+---
+title: Irora SEC
+description: AI-powered SEC filing intelligence
+icon: file-contract
+---
+
+<Info>
+  **20M+ filings** spanning 30+ years, 400+ form types, and 800,000+ filers — all indexed, searchable, and scored by AI.
+</Info>
+
+Irora SEC gives you programmatic access to the full SEC EDGAR archive. Every filing is processed by AI to extract sections, detect anomalies, and generate risk scores. Plus insider trading data, congressional trade tracking, change detection, and real-time alerts.
+
+## Key capabilities
+
+<CardGroup cols={2}>
+  <Card title="20M+ filings" icon="database" href="/irora-sec/guides/form-types">
+    Full EDGAR archive from 1993 to present, indexed and searchable in under 300ms.
+  </Card>
+  <Card title="Insider trading" icon="user-secret" href="/irora-sec/guides/insider-trading">
+    Form 4 transactions — individual trades, buyer/seller leaderboards, cluster detection, and company-level sentiment.
+  </Card>
+  <Card title="Politician trades" icon="landmark" href="/irora-sec/guides/politician-trades">
+    STOCK Act disclosures from Congress — filter by party, chamber, and date. Alpha engine computes trade-level performance.
+  </Card>
+  <Card title="AI risk scoring" icon="triangle-exclamation" href="/irora-sec/guides/risk-scoring">
+    Every filing gets a 0-100 risk score. Anomalies in financials, restatements, and disclosure gaps are flagged automatically.
+  </Card>
+  <Card title="Change detection" icon="code-compare" href="/irora-sec/guides/change-detection">
+    17-rule severity classifier compares sequential filings and surfaces material changes in Risk Factors, MD&A, Legal Proceedings, and more.
+  </Card>
+  <Card title="Natural language search" icon="magnifying-glass" href="/irora-sec/guides/natural-language-search">
+    Search in plain English — the engine extracts tickers, companies, dates, and filters from your query automatically.
+  </Card>
+  <Card title="Watchlists & alerts" icon="bell" href="/irora-sec/guides/watchlists">
+    Monitor tickers with watchlists. Get notified on new filings, insider trades, clusters, and politician trades.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/irora-sec/guides/webhooks">
+    Push notifications for filing events, insider trades, and triggered alerts — with HMAC signature verification.
+  </Card>
+</CardGroup>
+
+## Get started
+
+<CardGroup cols={3}>
+  <Card title="Quickstart" icon="rocket" href="/irora-sec/quickstart">
+    Make your first API call in 5 minutes.
+  </Card>
+  <Card title="API Reference" icon="terminal" href="/irora-sec/api-reference/introduction">
+    Interactive playground for all 35+ endpoints.
+  </Card>
+  <Card title="Pricing" icon="credit-card" href="/irora-sec/guides/pricing">
+    Free tier, Pro, and API plans.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Ingest" icon="download">
+    Irora SEC monitors EDGAR in real time. New filings are indexed within 300ms of publication. Form 4 and STOCK Act disclosures are parsed and classified automatically.
+  </Step>
+  <Step title="Process" icon="microchip">
+    AI models extract sections, parse XBRL data, identify entities, and generate summaries. The change detection engine compares each filing to its predecessor. Average processing time is 2.3 seconds per filing.
+  </Step>
+  <Step title="Score" icon="chart-line">
+    Each filing receives a risk score (0-100) based on anomaly detection across financials, disclosures, and historical patterns. Section-level changes are classified by a 17-rule severity engine.
+  </Step>
+  <Step title="Serve" icon="bolt">
+    Query, search, extract, and stream via purpose-built APIs. Set up watchlists for the tickers you care about and receive real-time alerts via webhooks or in-app notifications.
+  </Step>
+</Steps>

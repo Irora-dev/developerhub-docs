@@ -1,0 +1,143 @@
+---
+title: Watchlists
+description: Create and manage ticker watchlists for monitoring SEC activity
+icon: eye
+---
+
+Watchlists let you group tickers and monitor them for new filings, insider trades, and other activity. Full CRUD operations are available via the API, and watchlists integrate with [alerts](/irora-sec/guides/alerts) for real-time notifications.
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/watchlists` | List all watchlists |
+| POST | `/watchlists` | Create a watchlist |
+| PUT | `/watchlists/{id}` | Update a watchlist |
+| DELETE | `/watchlists/{id}` | Delete a watchlist |
+| POST | `/watchlists/{id}/tickers` | Add a ticker |
+| DELETE | `/watchlists/{id}/tickers/{ticker}` | Remove a ticker |
+
+## Create a watchlist
+
+<CodeGroup>
+```bash curl
+curl -X POST "https://api.irora.ai/irora-sec/v1/watchlists" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tech Giants","tickers":["AAPL","MSFT","GOOGL"]}'
+```
+
+```javascript Node.js
+const res = await fetch("https://api.irora.ai/irora-sec/v1/watchlists", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: "Tech Giants",
+    tickers: ["AAPL", "MSFT", "GOOGL"],
+  }),
+});
+const watchlist = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.post(
+    "https://api.irora.ai/irora-sec/v1/watchlists",
+    json={"name": "Tech Giants", "tickers": ["AAPL", "MSFT", "GOOGL"]},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+watchlist = res.json()
+```
+</CodeGroup>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Watchlist name |
+| `description` | string | No | Optional description |
+| `tickers` | string[] | Yes | Array of ticker symbols |
+
+### Response
+
+```json
+{
+  "id": "wl_123",
+  "name": "Tech Giants",
+  "description": null,
+  "tickers": ["AAPL", "MSFT", "GOOGL"],
+  "createdAt": "2026-03-03T12:00:00Z",
+  "updatedAt": "2026-03-03T12:00:00Z"
+}
+```
+
+## List watchlists
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/watchlists"
+```
+
+Returns an array of all watchlists owned by the authenticated user.
+
+## Update a watchlist
+
+```bash
+curl -X PUT "https://api.irora.ai/irora-sec/v1/watchlists/wl_123" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tech Giants Updated","tickers":["AAPL","MSFT","GOOGL","AMZN"]}'
+```
+
+All fields in the request body are optional — only include what you want to change.
+
+## Add and remove tickers
+
+Add a single ticker to an existing watchlist:
+
+```bash
+curl -X POST "https://api.irora.ai/irora-sec/v1/watchlists/wl_123/tickers" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"ticker":"NVDA"}'
+```
+
+Remove a ticker:
+
+```bash
+curl -X DELETE "https://api.irora.ai/irora-sec/v1/watchlists/wl_123/tickers/NVDA" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Both operations return the updated watchlist.
+
+## Delete a watchlist
+
+```bash
+curl -X DELETE "https://api.irora.ai/irora-sec/v1/watchlists/wl_123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Returns `204 No Content`.
+
+## Tier limits
+
+The number of watchlists you can create depends on your subscription tier:
+
+| Tier | Watchlist limit |
+|------|----------------|
+| Explorer (free) | 3 |
+| Pro ($79/mo) | 25 |
+| API ($199/mo) | Unlimited |
+
+See [pricing](/irora-sec/guides/pricing) for full tier details.
+
+## Integration with alerts
+
+Watchlists are the primary way to scope [alert rules](/irora-sec/guides/alerts). When you create an alert rule, you can target it at a specific watchlist — the alert will fire for any ticker in that watchlist.
+
+For example, creating an alert rule for "new filings" on your "Tech Giants" watchlist means you'll be notified whenever Apple, Microsoft, or Google files a new document with the SEC.

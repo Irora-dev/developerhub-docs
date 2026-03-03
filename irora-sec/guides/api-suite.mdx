@@ -1,0 +1,127 @@
+---
+title: API suite overview
+description: Complete catalog of Irora SEC APIs
+icon: grid-2
+---
+
+Irora SEC offers a comprehensive API suite organized into categories. This page provides an overview of the full suite. Use the [`GET /products`](/irora-sec/api-reference/introduction) endpoint to retrieve this catalog programmatically.
+
+## Core filing APIs
+
+The foundation of Irora SEC — search, retrieve, and process filings.
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| Filing List | `GET /filings` | Search and filter 20M+ filings with 10+ parameters |
+| Filing Detail | `GET /filings/{accession}` | Full filing with sections, exhibits, AI summary, and XBRL |
+| Recent Filings | `GET /filings/recent` | Latest filings with metadata and risk scores |
+| Search | `GET /search` | [Search filings](/irora-sec/guides/search) by company, ticker, or content |
+| Full-Text Search | `GET /search/full-text` | [Boolean search](/irora-sec/guides/search#full-text-search) within filing documents |
+| NL Search | `POST /search/nl` | [Natural language search](/irora-sec/guides/natural-language-search) — plain English queries |
+| Stream API | `WSS /stream` | Real-time WebSocket feed of new filings as they hit EDGAR |
+| XBRL-to-JSON | `GET /api/xbrl-to-json` | Convert XBRL to structured JSON: income, balance sheet, cash flow |
+| Section Extractor | `GET /api/extractor` | Extract specific sections from 10-K (21), 10-Q (10), 8-K (30 items) |
+| Filing Download | `GET /api/download` | Download filings and convert to PDF |
+
+## Insider trading
+
+Track Form 4 insider transactions. See the [insider trading guide](/irora-sec/guides/insider-trading) for details.
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| List Trades | `GET /insider-trades` | Filter by ticker, type, role, value, date range |
+| Top Buyers | `GET /insider-trades/top-buyers` | Highest-value buyers leaderboard |
+| Top Sellers | `GET /insider-trades/top-sellers` | Highest-value sellers leaderboard |
+| Clusters | `GET /insider-trades/clusters` | Multiple insiders trading in same company |
+| By Company | `GET /insider-trades/by-company` | Company-level activity summaries |
+| Statistics | `GET /insider-trades/stats` | Aggregate market-wide statistics |
+
+## Politician trades
+
+STOCK Act congressional disclosures. See the [politician trades guide](/irora-sec/guides/politician-trades) for details.
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| List Trades | `GET /politician-trades` | Filter by chamber, party, type, date range |
+| Top Traders | `GET /politician-trades/top-traders` | Most active politician traders |
+| Statistics | `GET /politician-trades/stats` | Aggregate congressional statistics |
+
+## Change detection
+
+Detect material changes between sequential filings. See the [change detection guide](/irora-sec/guides/change-detection) for the severity classifier.
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| Detected Changes | `GET /changes` | Changes with severity classification |
+
+## Watchlists and alerts
+
+Monitor companies and get notified. See [watchlists](/irora-sec/guides/watchlists) and [alerts](/irora-sec/guides/alerts).
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| List Watchlists | `GET /watchlists` | User watchlists |
+| Create Watchlist | `POST /watchlists` | Create a new watchlist |
+| Update Watchlist | `PUT /watchlists/{id}` | Modify name, description, or tickers |
+| Delete Watchlist | `DELETE /watchlists/{id}` | Remove a watchlist |
+| Add Ticker | `POST /watchlists/{id}/tickers` | Add a ticker to a watchlist |
+| Remove Ticker | `DELETE /watchlists/{id}/tickers/{ticker}` | Remove a ticker |
+| List Alerts | `GET /alerts` | User alert notifications |
+| Mark Read | `PATCH /alerts/{id}` | Mark alert as read |
+| Dismiss | `DELETE /alerts/{id}` | Dismiss an alert |
+| Mark All Read | `POST /alerts/mark-all-read` | Bulk mark as read |
+
+## Form-specific parsers
+
+Specialized endpoints for the most commonly analyzed form types.
+
+| API | Description |
+|-----|-------------|
+| 10-K Parser | Structured extraction of all 21 sections |
+| 10-Q Parser | Structured extraction of all 10 sections |
+| 8-K Parser | Event-level extraction with item classification |
+| DEF 14A Parser | Executive compensation tables, proposal extraction |
+| 13F Parser | Institutional holdings with position changes |
+| Form 4 Parser | Insider trades with transaction type classification |
+
+## Structured 8-K data
+
+Pre-processed current event data for the most common 8-K items.
+
+| API | Description |
+|-----|-------------|
+| M&A Events | Merger and acquisition announcements |
+| Executive Changes | CEO/CFO/board appointments and departures |
+| Earnings Events | Earnings releases and financial results |
+| Material Agreements | New contracts, amendments, terminations |
+| Regulation FD | Material non-public information disclosures |
+
+## Company intelligence
+
+Aggregate company-level insights built from filing data.
+
+| API | Description |
+|-----|-------------|
+| Company Profile | Consolidated profile from all filing sources |
+| Filing Timeline | Chronological filing history with status indicators |
+| Risk History | Historical risk score trends |
+| Peer Comparison | Industry peer metrics from comparable filings |
+| Insider Activity | Aggregated insider trading patterns |
+| Institutional Flows | 13F-derived ownership changes over time |
+
+## Reference and system
+
+| API | Endpoint | Description |
+|-----|----------|-------------|
+| Form Types | `GET /forms` | Full catalog of 400+ form types |
+| Products | `GET /products` | API product catalog |
+| Pricing | `GET /pricing` | Tier pricing and limits |
+| Health | `GET /health` | Service health check |
+| Platform Stats | `GET /stats` | Aggregate platform metrics |
+
+<Note>
+  Core filing, insider trading, politician trades, search, watchlists, alerts, and change
+  detection APIs are available now. Form-specific parsers, structured 8-K, and company
+  intelligence APIs are rolling out through 2026. Check the
+  [pricing endpoint](/irora-sec/guides/pricing) for current availability per tier.
+</Note>

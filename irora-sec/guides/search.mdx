@@ -1,0 +1,180 @@
+---
+title: Search guide
+description: How to search SEC filings with Irora SEC
+icon: magnifying-glass
+---
+
+Irora SEC provides multiple search endpoints across 20M+ filings. Use basic search for quick lookups, full-text search for precision queries within filing documents, or [natural language search](/irora-sec/guides/natural-language-search) for plain-English queries.
+
+## Basic search
+
+Pass a search term via the `query` parameter. The search matches against company name, ticker, form type, and filing summary.
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=apple&formType=10-K"
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/irora-sec/v1/search?query=apple&formType=10-K",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const { data, total, hasMore } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/irora-sec/v1/search",
+    params={"query": "apple", "formType": "10-K"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+results = res.json()["data"]
+```
+</CodeGroup>
+
+### Filter parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Search term (required) |
+| `formType` | string | Filter by form type (e.g. `10-K`, `8-K`) |
+| `ticker` | string | Filter by ticker symbol |
+| `dateFrom` | string | Start date (ISO 8601) |
+| `dateTo` | string | End date (ISO 8601) |
+| `dateRange` | string | `1D`, `7D`, `30D`, `90D`, `1Y`, or `ALL` |
+| `page` | integer | Page number (default: 1) |
+| `pageSize` | integer | Items per page (default: 20, max: 100) |
+| `sortBy` | string | Field to sort by |
+| `sortDir` | string | `asc` or `desc` |
+
+### Search fields
+
+The query matches across multiple fields simultaneously:
+
+| Field | Example matches |
+|-------|-----------------|
+| `company` | "Apple Inc.", "Pineapple Energy" |
+| `ticker` | "AAPL" |
+| `formType` | "10-K", "8-K", "DEF 14A" |
+| `snippet` | Any text in the AI-generated summary |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "sr_001",
+      "company": "Apple Inc.",
+      "ticker": "AAPL",
+      "formType": "10-K",
+      "title": "Annual Report",
+      "snippet": "Annual report. Revenue $412B (+8.2% YoY). Services segment $96B.",
+      "filedDate": "2026-01-31",
+      "accession": "0000320193-26-000042",
+      "score": 0.97
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "pageSize": 20,
+  "hasMore": false
+}
+```
+
+## Full-text search
+
+The full-text search endpoint searches within filing document content — not just metadata. It supports advanced query syntax and returns highlighted snippets showing match context.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search/full-text?query=%22material+weakness%22+AND+restatement"
+```
+
+### Query syntax
+
+| Feature | Syntax | Example |
+|---------|--------|---------|
+| Boolean AND | `AND` | `revenue AND decline` |
+| Boolean OR | `OR` | `merger OR acquisition` |
+| Boolean NOT | `NOT` | `restatement NOT voluntary` |
+| Phrase match | `"..."` | `"material weakness"` |
+| Wildcard | `*` | `restat*` |
+
+### Response
+
+Each result includes the filing section where the match was found, match count, and highlighted snippets:
+
+```json
+{
+  "data": [
+    {
+      "id": "ftm_001",
+      "accession": "0000320193-26-000042",
+      "company": "Apple Inc.",
+      "ticker": "AAPL",
+      "formType": "10-K",
+      "filedDate": "2026-01-31",
+      "section": "Item 9A. Controls and Procedures",
+      "matchCount": 3,
+      "highlights": [
+        "...identified a <mark>material weakness</mark> in internal controls...",
+        "...the <mark>restatement</mark> of previously issued financial statements..."
+      ],
+      "context": "The company disclosed control deficiencies..."
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "pageSize": 20,
+  "hasMore": false
+}
+```
+
+## Search tips
+
+### Search by ticker
+
+Ticker symbol search is the fastest way to find a specific company:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=TSLA"
+```
+
+### Search by form type
+
+Find all filings of a specific type:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=13F&dateRange=30D"
+```
+
+### Search by content
+
+The summary field is included in search, so you can find filings by topic:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=restatement"
+```
+
+### Combine with date range
+
+Narrow results to a specific time window:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/search?query=revenue+growth&formType=10-K&dateRange=1Y"
+```
+
+## Natural language search
+
+For exploratory queries in plain English, use the [natural language search](/irora-sec/guides/natural-language-search) endpoint. It understands queries like "insider buys at Apple over $1M last 90 days" and automatically extracts entities, dates, and filters.
+
+See the [API suite overview](/irora-sec/guides/api-suite) for all available search endpoints.

@@ -13,8 +13,8 @@ Use this template to create documentation for a new Irora product.
 
    | Placeholder                     | Example value                            |
    | ------------------------------- | ---------------------------------------- |
-   | `{{PRODUCT_NAME}}`              | SanctionsSeeker                          |
-   | `{{PRODUCT_SLUG}}`              | sanctionseeker                           |
+   | `{{PRODUCT_NAME}}`              | New Product                              |
+   | `{{PRODUCT_SLUG}}`              | new-product                              |
    | `{{PRODUCT_TAGLINE}}`           | Global sanctions screening API           |
    | `{{PRODUCT_DESCRIPTION}}`       | Full paragraph describing the product    |
    | `{{PRODUCT_DESCRIPTION_SHORT}}` | Short one-liner for API reference intro  |

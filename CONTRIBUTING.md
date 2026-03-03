@@ -27,7 +27,7 @@ developerhub-docs/
   docs.json              # Mintlify configuration
   index.mdx              # Hub landing page
   platform/              # Cross-product platform docs
-  verifai-sec/           # VerifAI SEC product docs
+  irora-sec/           # Irora SEC product docs
   snippets/shared/       # Reusable MDX snippets
   _templates/            # Templates for new products
   logo/                  # Irora logo assets

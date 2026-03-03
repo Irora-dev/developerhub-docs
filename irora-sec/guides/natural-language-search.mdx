@@ -1,0 +1,183 @@
+---
+title: Natural language search
+description: Search SEC data using plain English — the engine understands tickers, people, dates, and intent
+icon: magnifying-glass
+---
+
+<Info>
+  Search SEC data using plain English. The NL engine extracts tickers, companies, dates, and filters from your query automatically — no complex filter UIs needed.
+</Info>
+
+## Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/search/nl` | Natural language search |
+
+## How it works
+
+The NL search engine processes your query through four stages:
+
+<Steps>
+  <Step title="Intent detection">
+    Determines what type of data you're looking for — filings, insider trades, politician trades, or companies. Keywords like "10-K", "insider buy", "senator", or "stock" trigger specific intents.
+  </Step>
+  <Step title="Entity extraction">
+    Identifies structured entities in your query: ticker symbols (`$AAPL`, `TSLA`), company names (`Apple`, `Tesla`), people (`Nancy Pelosi`, `Jensen Huang`), form types, political parties, and chambers of Congress.
+  </Step>
+  <Step title="Date parsing">
+    Extracts date ranges from natural language expressions like "last 30 days", "since January", "this quarter", or "past year".
+  </Step>
+  <Step title="Filter resolution">
+    Maps extracted information to API filters: transaction types (`BUY`/`SELL`), value thresholds (`over $1M`), roles (`CEO`), parties (`Democrat`), and form types (`10-K`).
+  </Step>
+</Steps>
+
+## Example queries
+
+Here are example queries and what the engine resolves them to:
+
+| Query | Intent | Extracted |
+|-------|--------|-----------|
+| `Apple 10-K filings` | `filing` | ticker: AAPL, formType: 10-K |
+| `insider buys over $1M at Tesla` | `insider_trade` | ticker: TSLA, type: BUY, minValue: 1000000 |
+| `Nancy Pelosi trades last 90 days` | `politician_trade` | person: Nancy Pelosi, dateRange: 90 days |
+| `democrat senator sells` | `politician_trade` | party: D, chamber: Senate, type: SELL |
+| `CEO purchases this year` | `insider_trade` | role: CEO, type: BUY, dateRange: this year |
+| `13F filings from hedge funds` | `filing` | formType: 13F-HR |
+
+## Making a request
+
+<CodeGroup>
+```bash curl
+curl -X POST "https://api.irora.ai/irora-sec/v1/search/nl" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"insider buys at Apple over $1M last 90 days"}'
+```
+
+```javascript Node.js
+const res = await fetch("https://api.irora.ai/irora-sec/v1/search/nl", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    query: "insider buys at Apple over $1M last 90 days",
+  }),
+});
+const { results, query: parsedQuery, facets } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.post(
+    "https://api.irora.ai/irora-sec/v1/search/nl",
+    json={"query": "insider buys at Apple over $1M last 90 days"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+data = res.json()
+results = data["results"]
+parsed = data["query"]
+```
+</CodeGroup>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | Yes | Natural language search query |
+| `limit` | integer | No | Max results to return (default: 20) |
+| `offset` | integer | No | Skip N results for pagination |
+| `types` | string[] | No | Filter result types: `filing`, `insider_trade`, `politician_trade`, `company` |
+
+### Response structure
+
+```json
+{
+  "results": [
+    {
+      "id": "it_001",
+      "type": "insider_trade",
+      "title": "Tim Cook bought 100,000 shares",
+      "subtitle": "Apple Inc. (AAPL)",
+      "snippet": "CEO purchased $15.2M in stock",
+      "score": 0.95,
+      "date": "2026-02-15",
+      "ticker": "AAPL",
+      "company": "Apple Inc.",
+      "href": "/insider-trading?ticker=AAPL",
+      "metadata": {}
+    }
+  ],
+  "total": 5,
+  "query": {
+    "raw": "insider buys at Apple over $1M last 90 days",
+    "intent": "insider_trade",
+    "entities": [
+      { "type": "ticker", "value": "AAPL", "normalized": "AAPL", "confidence": 0.85 }
+    ],
+    "filters": {
+      "transactionType": "BUY",
+      "minValue": 1000000
+    },
+    "dateRange": {
+      "from": "2025-12-04",
+      "to": "2026-03-03"
+    },
+    "keywords": []
+  },
+  "queryTime": 42,
+  "facets": {
+    "types": { "insider_trade": 5 },
+    "tickers": [{ "ticker": "AAPL", "count": 5 }],
+    "dateRange": { "earliest": "2025-12-15", "latest": "2026-02-28" }
+  }
+}
+```
+
+## Parsed query object
+
+Every response includes the `query` object showing how your input was interpreted. This is useful for:
+
+- **Debugging** — see exactly what entities and filters were extracted
+- **UI display** — show users how their query was understood
+- **Refinement** — adjust the query if the parsed result doesn't match intent
+
+### Entity types
+
+| Type | Example | Description |
+|------|---------|-------------|
+| `ticker` | `AAPL` | Stock ticker symbol (via `$AAPL` or all-caps detection) |
+| `company` | `Apple` | Company name match |
+| `person` | `Nancy Pelosi` | Known person (insider or politician) |
+| `form_type` | `10-K` | SEC form type |
+| `party` | `D` | Political party |
+| `chamber` | `Senate` | Chamber of Congress |
+| `sector` | `Technology` | Industry sector |
+
+### Supported value expressions
+
+The parser understands monetary values in natural language:
+
+| Pattern | Parsed as |
+|---------|-----------|
+| `over $1M` | minValue: 1,000,000 |
+| `under $500K` | maxValue: 500,000 |
+| `$1M to $5M` | minValue: 1M, maxValue: 5M |
+| `more than $100K` | minValue: 100,000 |
+| `at least $10 million` | minValue: 10,000,000 |
+
+## Facets
+
+The response includes facet counts to help build drill-down UIs:
+
+- **types** — count of results per type (filing, insider_trade, etc.)
+- **tickers** — most common tickers in results
+- **dateRange** — earliest and latest dates in results
+
+## Combining with traditional search
+
+For queries that the NL engine can't parse (e.g., boolean logic, exact phrases), use the [full-text search](/irora-sec/guides/search) endpoint instead. The NL engine is optimized for exploratory queries, while full-text search is optimized for precision.

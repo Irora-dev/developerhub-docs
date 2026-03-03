@@ -1,0 +1,155 @@
+---
+title: Alerts
+description: Real-time notifications for filing activity, insider trades, and more
+icon: bell
+---
+
+Irora SEC alerts notify you when important events happen for companies you're tracking. Alerts are triggered by new filings, insider trades, price moves, cluster detections, and politician trades.
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/alerts` | List alerts |
+| PATCH | `/alerts/{id}` | Mark an alert as read |
+| DELETE | `/alerts/{id}` | Dismiss an alert |
+| POST | `/alerts/mark-all-read` | Mark all alerts as read |
+
+## Alert types
+
+| Type | Trigger |
+|------|---------|
+| `new_filing` | A company on your watchlist files a new document |
+| `insider_trade` | An insider at a watched company executes a trade |
+| `price_move` | Significant price movement for a watched ticker |
+| `cluster_detected` | Multiple insiders trade at the same company within a short window |
+| `politician_trade` | A politician trades a stock on your watchlist |
+
+## Severity levels
+
+| Severity | Meaning |
+|----------|---------|
+| `info` | Routine activity — new filing, standard trade |
+| `warning` | Notable activity — large insider trade, unusual timing |
+| `critical` | Urgent — cluster detected, high-severity filing change, late disclosure |
+
+## List alerts
+
+<CodeGroup>
+```bash curl
+# All alerts
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/alerts"
+
+# Unread only
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/irora-sec/v1/alerts?unreadOnly=true"
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/irora-sec/v1/alerts?unreadOnly=true",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const alerts = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/irora-sec/v1/alerts",
+    params={"unreadOnly": "true"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+alerts = res.json()
+```
+</CodeGroup>
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Alert ID |
+| `type` | string | Alert type (see table above) |
+| `severity` | string | `info`, `warning`, or `critical` |
+| `title` | string | Short alert title |
+| `message` | string | Detailed alert message |
+| `ticker` | string | Related stock ticker (if applicable) |
+| `company` | string | Related company name (if applicable) |
+| `read` | boolean | Whether the alert has been read |
+| `createdAt` | string | ISO 8601 timestamp |
+| `actionUrl` | string | Deep link to the related filing or trade |
+
+### Example response
+
+```json
+[
+  {
+    "id": "alert_456",
+    "type": "insider_trade",
+    "severity": "warning",
+    "title": "Large insider buy at NVDA",
+    "message": "Jensen Huang purchased 50,000 shares of NVIDIA Corp. worth $44.5M",
+    "ticker": "NVDA",
+    "company": "NVIDIA Corp.",
+    "read": false,
+    "createdAt": "2026-03-03T10:30:00Z",
+    "actionUrl": "/insider-trading?ticker=NVDA"
+  }
+]
+```
+
+## Manage alerts
+
+### Mark as read
+
+```bash
+curl -X PATCH "https://api.irora.ai/irora-sec/v1/alerts/alert_456" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"read": true}'
+```
+
+### Dismiss an alert
+
+```bash
+curl -X DELETE "https://api.irora.ai/irora-sec/v1/alerts/alert_456" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Mark all as read
+
+```bash
+curl -X POST "https://api.irora.ai/irora-sec/v1/alerts/mark-all-read" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Alert rules
+
+Alert rules define what triggers notifications. Rules are scoped by category and can target specific [watchlists](/irora-sec/guides/watchlists).
+
+### Rule categories
+
+| Category | Triggers on |
+|----------|-------------|
+| `insider` | Insider trades matching your criteria |
+| `filing` | New filings for watched companies |
+| `congress` | Politician trades in watched tickers |
+| `portfolio` | Activity across your entire portfolio |
+| `change_detection` | High-severity changes in filing sections |
+
+### Notification channels
+
+- **In-app** — Alerts appear in the Irora SEC dashboard
+- **Email** — Digest or real-time email notifications
+
+## Tier limits
+
+| Tier | Alert rule limit |
+|------|-----------------|
+| Explorer (free) | 3 rules |
+| Pro ($79/mo) | 50 rules |
+| API ($199/mo) | Unlimited |
+
+See [pricing](/irora-sec/guides/pricing) for full tier details.

@@ -1,0 +1,189 @@
+---
+title: Webhooks
+description: Receive real-time push notifications when SEC events occur
+icon: webhook
+---
+
+Webhooks let you receive HTTP push notifications when events occur in Irora SEC, instead of polling the API. Configure a webhook endpoint and we'll send a POST request to your URL whenever a relevant event fires.
+
+## Events
+
+| Event | Description |
+|-------|-------------|
+| `filing.new` | A new SEC filing is published for a watched ticker |
+| `filing.amended` | An existing filing is amended or restated |
+| `insider_trade.new` | A new Form 4 insider trade is filed for a watched ticker |
+| `alert.triggered` | An alert rule fires (any type) |
+
+## Payload structure
+
+All webhook payloads follow this envelope structure:
+
+```json
+{
+  "id": "evt_abc123",
+  "event": "filing.new",
+  "timestamp": "2026-03-03T10:30:00Z",
+  "data": {
+    // Event-specific payload
+  }
+}
+```
+
+### `filing.new` / `filing.amended`
+
+```json
+{
+  "id": "evt_001",
+  "event": "filing.new",
+  "timestamp": "2026-03-03T10:30:00Z",
+  "data": {
+    "accession": "0000320193-26-000042",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "formType": "10-K",
+    "filedDate": "2026-03-03",
+    "title": "Annual Report",
+    "riskScore": 12,
+    "status": "verified"
+  }
+}
+```
+
+### `insider_trade.new`
+
+```json
+{
+  "id": "evt_002",
+  "event": "insider_trade.new",
+  "timestamp": "2026-03-03T11:00:00Z",
+  "data": {
+    "tradeId": "it_456",
+    "insider": "Tim Cook",
+    "title": "CEO",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "type": "BUY",
+    "shares": 100000,
+    "price": 152.30,
+    "value": 15230000,
+    "date": "2026-03-01"
+  }
+}
+```
+
+### `alert.triggered`
+
+```json
+{
+  "id": "evt_003",
+  "event": "alert.triggered",
+  "timestamp": "2026-03-03T11:30:00Z",
+  "data": {
+    "alertId": "alert_789",
+    "type": "cluster_detected",
+    "severity": "critical",
+    "title": "Insider cluster buy at MSFT",
+    "message": "4 insiders purchased shares within 5 days",
+    "ticker": "MSFT",
+    "company": "Microsoft Corp."
+  }
+}
+```
+
+## Signature verification
+
+Every webhook request includes an `X-Irora-Signature` header containing an HMAC-SHA256 signature of the request body, signed with your webhook secret.
+
+**Always verify the signature before processing the payload.**
+
+<CodeGroup>
+```javascript Node.js
+import crypto from "crypto";
+
+function verifyWebhookSignature(body, signature, secret) {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(body, "utf-8")
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+// In your webhook handler
+app.post("/webhooks/irora-sec", (req, res) => {
+  const signature = req.headers["x-irora-signature"];
+  const isValid = verifyWebhookSignature(
+    req.body,
+    signature,
+    process.env.WEBHOOK_SECRET
+  );
+
+  if (!isValid) {
+    return res.status(401).send("Invalid signature");
+  }
+
+  const event = JSON.parse(req.body);
+  console.log(`Received ${event.event}:`, event.data);
+
+  // Process the event...
+
+  res.status(200).send("OK");
+});
+```
+
+```python Python
+import hmac
+import hashlib
+from flask import Flask, request
+
+app = Flask(__name__)
+
+def verify_signature(body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(), body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+
+@app.route("/webhooks/irora-sec", methods=["POST"])
+def handle_webhook():
+    signature = request.headers.get("X-Irora-Signature", "")
+    if not verify_signature(request.data, signature, WEBHOOK_SECRET):
+        return "Invalid signature", 401
+
+    event = request.json
+    print(f"Received {event['event']}: {event['data']}")
+
+    # Process the event...
+
+    return "OK", 200
+```
+</CodeGroup>
+
+## Retry policy
+
+If your endpoint returns a non-2xx status code, we retry with exponential backoff:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 30 seconds |
+| 2nd retry | 2 minutes |
+| 3rd retry | 15 minutes |
+| 4th retry | 1 hour |
+| 5th retry | 4 hours |
+
+After 5 failed attempts, the webhook delivery is marked as failed. Failed deliveries can be viewed and retried from the dashboard.
+
+## Best practices
+
+1. **Respond quickly** — Return a `200` status within 5 seconds. Process events asynchronously if needed.
+2. **Verify signatures** — Always validate the `X-Irora-Signature` header to ensure the request is from Irora SEC.
+3. **Handle duplicates** — Use the `id` field to deduplicate events. In rare cases, the same event may be delivered more than once.
+4. **Use HTTPS** — Webhook endpoints must use HTTPS in production.
+
+<Note>
+  Webhook configuration is managed from the Irora SEC dashboard under Settings.
+  Webhooks are available on Pro and API tiers.
+</Note>
