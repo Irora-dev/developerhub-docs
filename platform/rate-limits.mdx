@@ -1,0 +1,36 @@
+---
+title: Rate limits
+description: Rate limiting policy across Irora APIs
+---
+
+<Snippet file="shared/rate-limits.mdx" />
+
+## Limits by tier
+
+Rate limits vary per product and subscription tier. Below are the standard tiers for VerifAI SEC.
+
+| Endpoint       | Free    | Personal | Business | Enterprise |
+| -------------- | ------- | -------- | -------- | ---------- |
+| Query API      | 2/sec   | 20/sec   | 40/sec   | Custom     |
+| Full-text search | 1/sec | 10/sec   | 20/sec   | Custom     |
+| Section extractor | 1/sec | 10/sec  | 20/sec   | Custom     |
+| Filing download | 1/sec  | 15K/5min | 15K/5min | Custom     |
+
+### Bandwidth limits
+
+In addition to request rate limits, each tier includes a monthly bandwidth allowance:
+
+| Tier       | Bandwidth      | Overage      |
+| ---------- | -------------- | ------------ |
+| Free       | N/A            | N/A          |
+| Personal   | 50 GB/month    | $0.30/GB     |
+| Business   | 100 GB/month   | $0.30/GB     |
+| Enterprise | Custom         | Custom       |
+
+## Burst allowance
+
+All tiers include a brief burst allowance of 2x the sustained rate for up to 5 seconds. This accommodates startup traffic spikes without triggering a `429`.
+
+## Need higher limits?
+
+[Contact sales](mailto:support@irora.ai) for custom rate limits, dedicated infrastructure, or SLA guarantees.

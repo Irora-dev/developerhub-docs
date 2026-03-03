@@ -1,0 +1,34 @@
+## Authentication
+
+All Irora APIs use **Bearer token** authentication. Include your API key in the `Authorization` header of every request.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.irora.ai/{product}/v1/endpoint
+```
+
+### Getting your API key
+
+1. Sign up at [irora.ai/keys](https://irora.ai/keys)
+2. Create a new API key for the product you want to use
+3. Copy the key — it is only shown once
+
+<Warning>
+  Keep your API key secret. Do not commit it to version control or expose it in
+  client-side code.
+</Warning>
+
+### Key format
+
+Irora API keys follow the format:
+
+```
+irora_{product}_{environment}_{random}
+```
+
+| Segment       | Example       | Description                  |
+| ------------- | ------------- | ---------------------------- |
+| `irora`       | `irora`       | Prefix identifying Irora     |
+| `product`     | `verifai`     | Product short name           |
+| `environment` | `live`, `test`| Live or test environment     |
+| `random`      | `a1b2c3...`   | 32-character random string   |

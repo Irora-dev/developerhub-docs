@@ -1,0 +1,63 @@
+---
+title: Quickstart
+description: "Make your first {{PRODUCT_NAME}} API call in 5 minutes"
+---
+
+## 1. Get your API key
+
+Sign up at [irora.ai/keys](https://irora.ai/keys) and create a {{PRODUCT_NAME}} API key.
+
+## 2. Check the service
+
+Verify connectivity with the health endpoint:
+
+```bash
+curl https://api.irora.ai/{{PRODUCT_SLUG}}/v1/health
+```
+
+```json
+{
+  "status": "ok",
+  "service": "{{PRODUCT_SLUG}}",
+  "timestamp": "2026-03-03T12:00:00.000Z"
+}
+```
+
+## 3. Make your first request
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.irora.ai/{{PRODUCT_SLUG}}/v1/{{EXAMPLE_ENDPOINT}}
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/{{PRODUCT_SLUG}}/v1/{{EXAMPLE_ENDPOINT}}",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/{{PRODUCT_SLUG}}/v1/{{EXAMPLE_ENDPOINT}}",
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+print(res.json())
+```
+</CodeGroup>
+
+## 4. Explore
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="terminal" href="/{{PRODUCT_SLUG}}/api-reference/introduction">
+    Interactive playground for all endpoints.
+  </Card>
+  <Card title="Guides" icon="book" href="/{{PRODUCT_SLUG}}/guides/example-guide">
+    In-depth guides and tutorials.
+  </Card>
+</CardGroup>

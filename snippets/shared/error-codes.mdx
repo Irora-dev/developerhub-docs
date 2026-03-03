@@ -1,0 +1,28 @@
+## Standard error codes
+
+All Irora APIs return errors in a consistent format:
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The 'q' parameter is required for search requests.",
+    "status": 400
+  }
+}
+```
+
+### HTTP status codes
+
+| Status | Code                  | Description                                      |
+| ------ | --------------------- | ------------------------------------------------ |
+| `400`  | `invalid_request`     | Missing or invalid request parameters            |
+| `401`  | `unauthorized`        | Missing or invalid API key                       |
+| `403`  | `forbidden`           | API key does not have access to this resource     |
+| `404`  | `not_found`           | The requested resource does not exist            |
+| `409`  | `conflict`            | The request conflicts with the current state     |
+| `422`  | `unprocessable`       | Request is well-formed but contains invalid data |
+| `429`  | `rate_limited`        | Too many requests — slow down                    |
+| `500`  | `internal_error`      | Something went wrong on our end                  |
+| `502`  | `upstream_error`      | An upstream service (e.g., EDGAR) is unavailable |
+| `503`  | `service_unavailable` | The service is temporarily down for maintenance  |

@@ -1,0 +1,38 @@
+---
+title: API reference
+description: "Interactive reference for the {{PRODUCT_NAME}} API"
+---
+
+The {{PRODUCT_NAME}} API provides programmatic access to {{PRODUCT_DESCRIPTION_SHORT}}.
+
+## Base URL
+
+```
+https://api.irora.ai/{{PRODUCT_SLUG}}/v1
+```
+
+## Authentication
+
+All endpoints require a Bearer token:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.irora.ai/{{PRODUCT_SLUG}}/v1/endpoint
+```
+
+Get your API key at [irora.ai/keys](https://irora.ai/keys).
+
+## Endpoints
+
+| Method | Path            | Description             |
+| ------ | --------------- | ----------------------- |
+| GET    | `/health`       | Service health check    |
+| GET    | `/example`      | Example endpoint        |
+
+## Response format
+
+All responses return JSON. See [standard response format](/platform/errors) for the error envelope structure.
+
+## Rate limits
+
+Rate limits depend on your subscription tier. See [rate limits](/platform/rate-limits) for details.

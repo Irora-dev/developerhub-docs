@@ -1,88 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "maple",
+  "name": "Irora Developer Hub",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#3b82f6",
+    "light": "#60a5fa",
+    "dark": "#1e3a5f"
   },
   "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -90,33 +15,129 @@
   "navbar": {
     "links": [
       {
+        "label": "GitHub",
+        "href": "https://github.com/Irora-dev"
+      },
+      {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@irora.ai"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get API Keys",
+      "href": "https://irora.ai/keys"
     }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Platform",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "platform/authentication",
+              "platform/errors",
+              "platform/rate-limits"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "VerifAI SEC",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "verifai-sec/index",
+              "verifai-sec/quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "verifai-sec/guides/form-types",
+              "verifai-sec/guides/risk-scoring",
+              "verifai-sec/guides/search",
+              "verifai-sec/guides/api-suite"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "VerifAI SEC API",
+            "pages": [
+              "verifai-sec/api-reference/introduction"
+            ]
+          }
+        ],
+        "openapi": "verifai-sec/openapi.yaml"
+      }
+    ]
+  },
+  "variables": {
+    "companyName": "Irora",
+    "supportEmail": "support@irora.ai",
+    "githubOrg": "Irora-dev",
+    "docsUrl": "https://docs.irora.ai"
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+      "github": "https://github.com/Irora-dev",
+      "linkedin": "https://linkedin.com/company/irora",
+      "x": "https://x.com/irora_ai"
+    },
+    "links": [
+      {
+        "header": "Products",
+        "items": [
+          {
+            "label": "VerifAI SEC",
+            "href": "/verifai-sec"
+          }
+        ]
+      },
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "API Reference",
+            "href": "/verifai-sec/api-reference/introduction"
+          },
+          {
+            "label": "Status",
+            "href": "https://status.irora.ai"
+          }
+        ]
+      },
+      {
+        "header": "Company",
+        "items": [
+          {
+            "label": "GitHub",
+            "href": "https://github.com/Irora-dev"
+          },
+          {
+            "label": "Contact",
+            "href": "mailto:support@irora.ai"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,34 @@
+## Rate limits
+
+Irora APIs enforce per-second rate limits based on your subscription tier. Exceeding the limit returns a `429 Too Many Requests` response.
+
+### Rate limit headers
+
+Every response includes rate limit information:
+
+| Header                  | Description                        |
+| ----------------------- | ---------------------------------- |
+| `X-RateLimit-Limit`     | Maximum requests per second        |
+| `X-RateLimit-Remaining` | Requests remaining in the window   |
+| `X-RateLimit-Reset`     | Unix timestamp when the window resets |
+
+### Handling rate limits
+
+When you receive a `429` response, wait until the `X-RateLimit-Reset` timestamp before retrying. Implement exponential backoff for best results:
+
+```javascript
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    const res = await fetch(url, options);
+    if (res.status !== 429) return res;
+
+    const resetAt = res.headers.get("X-RateLimit-Reset");
+    const waitMs = resetAt
+      ? Math.max(0, Number(resetAt) * 1000 - Date.now())
+      : 1000 * Math.pow(2, i);
+
+    await new Promise((r) => setTimeout(r, waitMs));
+  }
+  throw new Error("Rate limit exceeded after retries");
+}
+```

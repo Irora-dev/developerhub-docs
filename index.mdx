@@ -1,97 +1,48 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: Irora Developer Hub
+description: APIs and tools for verified data intelligence
 ---
 
-## Setting up
+Build with Irora's suite of verified data APIs. From SEC filings to sanctions screening, every endpoint is designed for accuracy, speed, and compliance.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="VerifAI SEC" icon="file-contract" href="/verifai-sec">
+    AI-powered SEC filing intelligence. Search 20M+ filings, extract sections,
+    analyze risk signals, and stream real-time EDGAR data.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="SanctionsSeeker" icon="shield-halved" href="https://sanctionseeker-production.up.railway.app" >
+    Global sanctions screening across OFAC, EU, UN, and 30+ lists.
+    Sub-second lookups with fuzzy matching and risk scoring.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Quick links
 
-Everything you need to create world-class documentation.
+<CardGroup cols={3}>
+  <Card title="Get API keys" icon="key" href="https://irora.ai/keys">
+    Create your account and generate API keys.
+  </Card>
+  <Card title="Authentication" icon="lock" href="/platform/authentication">
+    Learn how to authenticate your requests.
+  </Card>
+  <Card title="API Reference" icon="code" href="/verifai-sec/api-reference/introduction">
+    Interactive playground for all endpoints.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Why Irora?
 
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Steps>
+  <Step title="Verified data">
+    Every data point is traced back to its source. No hallucinated metadata, no
+    stale caches. Our pipelines validate against primary sources in real time.
+  </Step>
+  <Step title="Developer-first APIs">
+    Consistent REST interfaces, OpenAPI specs, typed SDKs, and interactive
+    playgrounds. Build production integrations in hours, not weeks.
+  </Step>
+  <Step title="Scale without limits">
+    From 100 free API calls to custom enterprise plans. Rate limits, bandwidth,
+    and SLAs that grow with your business.
+  </Step>
+</Steps>

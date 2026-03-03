@@ -1,0 +1,55 @@
+## Response format
+
+All Irora APIs return JSON responses with a consistent envelope structure.
+
+### Successful responses
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_abc123",
+    "timestamp": "2026-03-03T12:00:00Z"
+  }
+}
+```
+
+| Field             | Type   | Description                             |
+| ----------------- | ------ | --------------------------------------- |
+| `data`            | object | The response payload                    |
+| `meta.requestId`  | string | Unique ID for the request (use in support tickets) |
+| `meta.timestamp`  | string | ISO 8601 timestamp of the response      |
+
+### Paginated responses
+
+Endpoints that return lists include pagination metadata:
+
+```json
+{
+  "data": [ ... ],
+  "meta": {
+    "requestId": "req_abc123",
+    "timestamp": "2026-03-03T12:00:00Z",
+    "pagination": {
+      "page": 1,
+      "perPage": 25,
+      "total": 1432,
+      "totalPages": 58
+    }
+  }
+}
+```
+
+Use the `page` and `per_page` query parameters to navigate through results.
+
+### Error responses
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "Human-readable description of what went wrong.",
+    "status": 400
+  }
+}
+```

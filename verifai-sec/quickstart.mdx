@@ -1,0 +1,108 @@
+---
+title: Quickstart
+description: Make your first VerifAI SEC API call in 5 minutes
+---
+
+## 1. Get your API key
+
+Sign up at [irora.ai/keys](https://irora.ai/keys) and create a VerifAI SEC API key. The free tier includes 100 lifetime API calls — no credit card required.
+
+## 2. Check the service
+
+Verify connectivity with the health endpoint (no auth required):
+
+```bash
+curl https://api.irora.ai/verifai-sec/v1/health
+```
+
+```json
+{
+  "status": "ok",
+  "service": "verifai-sec",
+  "timestamp": "2026-03-03T12:00:00.000Z"
+}
+```
+
+## 3. Fetch recent filings
+
+Get the latest SEC filings with AI-generated summaries and risk scores:
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.irora.ai/verifai-sec/v1/filings/recent
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://api.irora.ai/verifai-sec/v1/filings/recent",
+  { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+);
+const data = await res.json();
+console.log(data.filings);
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://api.irora.ai/verifai-sec/v1/filings/recent",
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
+)
+print(res.json()["filings"])
+```
+</CodeGroup>
+
+Each filing includes:
+
+| Field          | Description                                |
+| -------------- | ------------------------------------------ |
+| `company`      | Company name                               |
+| `ticker`       | Stock ticker symbol                        |
+| `cik`          | SEC Central Index Key                      |
+| `form`         | Form type (10-K, 8-K, etc.)               |
+| `status`       | `verified`, `flagged`, or `pending`        |
+| `riskScore`    | AI risk score from 0 (safe) to 100 (risk)  |
+| `summary`      | AI-generated filing summary                |
+
+## 4. Search filings
+
+Search by company name, ticker, or form type:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://api.irora.ai/verifai-sec/v1/filings/search?q=tesla"
+```
+
+```json
+{
+  "query": "tesla",
+  "total": 1,
+  "results": [
+    {
+      "company": "Tesla Inc.",
+      "ticker": "TSLA",
+      "form": "10-Q",
+      "filed": "2026-02-14",
+      "summary": "Quarterly report. Revenue $28.4B. Automotive margin 18.2%. Risk flags: related-party transactions..."
+    }
+  ]
+}
+```
+
+## 5. Explore the API
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="terminal" href="/verifai-sec/api-reference/introduction">
+    Interactive playground for all 7 endpoints.
+  </Card>
+  <Card title="API suite overview" icon="grid-2" href="/verifai-sec/guides/api-suite">
+    Full catalog of 34 APIs across 6 categories.
+  </Card>
+  <Card title="Form types" icon="list" href="/verifai-sec/guides/form-types">
+    400+ form types organized by category.
+  </Card>
+  <Card title="Risk scoring" icon="triangle-exclamation" href="/verifai-sec/guides/risk-scoring">
+    How AI risk scores work and what they mean.
+  </Card>
+</CardGroup>

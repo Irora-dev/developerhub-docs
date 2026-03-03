@@ -1,0 +1,51 @@
+openapi: 3.1.0
+info:
+  title: "{{PRODUCT_NAME}} API"
+  description: "{{PRODUCT_DESCRIPTION}}"
+  version: 1.0.0
+  contact:
+    name: Irora Support
+    email: support@irora.ai
+
+servers:
+  - url: "https://api.irora.ai/{{PRODUCT_SLUG}}/v1"
+    description: Production
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the current health status of the service.
+      tags:
+        - System
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: "{{PRODUCT_SLUG}}"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # Add your endpoints here
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "API key passed as a Bearer token. Get your key at https://irora.ai/keys"

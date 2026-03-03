@@ -1,0 +1,43 @@
+---
+title: Error handling
+description: Standard error codes and handling across all Irora APIs
+---
+
+<Snippet file="shared/error-codes.mdx" />
+
+<Snippet file="shared/response-format.mdx" />
+
+## Debugging errors
+
+### Use the request ID
+
+Every response includes a `meta.requestId` field. Include this in support tickets for faster resolution.
+
+```bash
+curl -s https://api.irora.ai/verifai-sec/v1/health | jq '.meta.requestId'
+# "req_abc123def456"
+```
+
+### Common mistakes
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized — missing API key">
+    Ensure the `Authorization` header is set with `Bearer ` prefix:
+    ```bash
+    # Wrong
+    curl -H "Authorization: my_key" ...
+
+    # Correct
+    curl -H "Authorization: Bearer my_key" ...
+    ```
+  </Accordion>
+  <Accordion title="403 Forbidden — wrong product key">
+    API keys are scoped per product. A VerifAI SEC key cannot access SanctionsSeeker endpoints and vice versa.
+  </Accordion>
+  <Accordion title="429 Too Many Requests — rate limited">
+    Check the `X-RateLimit-Remaining` header. If zero, wait until `X-RateLimit-Reset` before retrying. See [rate limits](/platform/rate-limits) for per-tier limits.
+  </Accordion>
+  <Accordion title="502 Upstream Error — EDGAR is down">
+    Some endpoints rely on upstream SEC EDGAR feeds. When EDGAR is unavailable, cached data is returned with a `X-Data-Source: cache` header. Check [status.irora.ai](https://status.irora.ai) for real-time status.
+  </Accordion>
+</AccordionGroup>

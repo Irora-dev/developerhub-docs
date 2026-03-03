@@ -1,0 +1,37 @@
+---
+title: Authentication
+description: How to authenticate with Irora APIs
+---
+
+<Snippet file="shared/auth-setup.mdx" />
+
+## Per-product authentication
+
+Each Irora product may have additional authentication requirements beyond the standard Bearer token.
+
+### VerifAI SEC
+
+Standard Bearer token authentication. See the [VerifAI SEC quickstart](/verifai-sec/quickstart) for product-specific examples.
+
+### SanctionsSeeker (x402 payments)
+
+SanctionsSeeker supports **x402 payment-gated** endpoints in addition to API key auth. Payment-gated endpoints accept a micropayment header instead of (or in addition to) an API key.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "X-Payment: <x402-payment-token>" \
+     https://api.irora.ai/sanctionseeker/v1/search
+```
+
+See the [SanctionsSeeker docs](https://sanctionseeker-production.up.railway.app) for x402 setup details.
+
+## Test vs. live keys
+
+Every Irora product provides separate test and live API keys:
+
+| Environment | Key prefix             | Data          | Rate limits |
+| ----------- | ---------------------- | ------------- | ----------- |
+| Test        | `irora_{product}_test` | Mock/sandbox  | Relaxed     |
+| Live        | `irora_{product}_live` | Real/production | Per plan  |
+
+Use test keys during development to avoid consuming your quota.

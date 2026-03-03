@@ -1,0 +1,107 @@
+---
+title: SEC form types
+description: Reference guide to 400+ SEC form types organized by category
+---
+
+The SEC requires public companies, insiders, and institutional investors to file standardized forms. VerifAI SEC indexes 400+ form types across 8 categories.
+
+Use the [`GET /forms`](/verifai-sec/api-reference/introduction) endpoint to retrieve the full list programmatically.
+
+## Annual and quarterly reports
+
+The core financial filings that public companies submit on a regular schedule.
+
+| Form   | Description                                | Sections |
+| ------ | ------------------------------------------ | -------- |
+| 10-K   | Annual report                              | 21       |
+| 10-Q   | Quarterly report                           | 10       |
+| 20-F   | Annual report (foreign private issuers)    | 20       |
+| 40-F   | Annual report (Canadian issuers)           | 15       |
+
+**Use case**: Financial analysis, earnings research, competitive intelligence.
+
+## Current event reports
+
+Filed when material events occur between regular reporting periods.
+
+| Form   | Description                                | Items |
+| ------ | ------------------------------------------ | ----- |
+| 8-K    | Current report                             | 30    |
+| 6-K    | Current report (foreign private issuers)   | N/A   |
+
+**Use case**: Real-time event monitoring, M&A tracking, executive changes.
+
+## Proxy statements
+
+Filed in connection with shareholder meetings and votes.
+
+| Form     | Description                  |
+| -------- | ---------------------------- |
+| DEF 14A  | Definitive proxy statement   |
+| DEFA14A  | Additional proxy materials   |
+| PRE 14A  | Preliminary proxy statement  |
+
+**Use case**: Executive compensation analysis, governance research, activist investor tracking.
+
+## Insider trading
+
+Filed by company insiders (officers, directors, 10%+ owners) when they trade.
+
+| Form   | Description                                          |
+| ------ | ---------------------------------------------------- |
+| Form 3 | Initial statement of beneficial ownership            |
+| Form 4 | Changes in beneficial ownership                      |
+| Form 5 | Annual statement of changes in beneficial ownership  |
+
+**Use case**: Insider trading signals, compliance monitoring, executive activity tracking.
+
+## Institutional holdings
+
+Filed by institutional investment managers reporting their holdings.
+
+| Form    | Description                           |
+| ------- | ------------------------------------- |
+| 13F-HR  | Quarterly holdings report             |
+| 13F-NT  | Notice of late filing                 |
+| SC 13D  | Beneficial ownership (activist)       |
+| SC 13G  | Beneficial ownership (passive)        |
+
+**Use case**: Hedge fund portfolio analysis, ownership tracking, flow-of-funds research.
+
+## Registration and offerings
+
+Filed when companies register new securities for sale.
+
+| Form   | Description                              |
+| ------ | ---------------------------------------- |
+| S-1    | IPO registration statement               |
+| S-1/A  | IPO registration amendment               |
+| S-3    | Shelf registration (existing issuers)    |
+| S-4    | M&A registration                         |
+| F-1    | IPO registration (foreign issuers)       |
+
+**Use case**: IPO research, capital markets intelligence, deal tracking.
+
+## Investment companies
+
+Filed by mutual funds, ETFs, and other registered investment companies.
+
+| Form   | Description                               |
+| ------ | ----------------------------------------- |
+| N-PORT | Monthly portfolio holdings                |
+| N-PX   | Proxy voting records                      |
+| N-CEN  | Annual census report                      |
+| N-CSR  | Certified shareholder report              |
+
+**Use case**: Fund holdings analysis, proxy voting research, fund flow tracking.
+
+## Investment advisors
+
+Filed by registered investment advisors (RIAs).
+
+| Form     | Description                                |
+| -------- | ------------------------------------------ |
+| Form ADV | Uniform application for investment advisor |
+| ADV-W    | Withdrawal from registration               |
+
+**Use case**: Advisor due diligence, AUM tracking, regulatory compliance checks.
